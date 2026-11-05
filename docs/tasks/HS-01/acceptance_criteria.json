@@ -31,7 +31,7 @@
       "id": "AC-5",
       "description": "GitHub Pages is enabled with source GitHub Actions",
       "verification": "gh api repos/harrisbinkhurram/hopscore/pages returns build_type 'workflow'",
-      "passes": false
+      "passes": true
     },
     {
       "id": "AC-6",

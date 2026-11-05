@@ -101,3 +101,5 @@ See [acceptance_criteria.json](acceptance_criteria.json).
   upload-pages-artifact v5, deploy-pages v5.
 - 2026-11-05: Phone check done by loading the built page in 320, 360 and 390 px frames
   (the Chrome window would not report a narrow viewport). No sideways scroll at any width.
+- 2026-11-05: The repo is now public. Pages is enabled with source "GitHub Actions"
+  (`build_type: workflow`), checked with `gh api repos/harrisbinkhurram/hopscore/pages`.
