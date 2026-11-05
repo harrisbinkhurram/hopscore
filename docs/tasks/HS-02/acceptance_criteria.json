@@ -49,7 +49,7 @@
       "id": "AC-8",
       "description": "Tests, typecheck and build pass locally and in CI on the PR",
       "verification": "npm test, npm run typecheck, npm run build; gh pr checks green",
-      "passes": false
+      "passes": true
     },
     {
       "id": "AC-9",
