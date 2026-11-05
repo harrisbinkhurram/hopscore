@@ -1,0 +1,112 @@
+{
+  "plan_id": "hopscore",
+  "plan_title": "Hopscore — Dixit Score Tracker",
+  "plan_ticket": null,
+  "story_ticket": null,
+  "created": "2026-11-05",
+  "owner": "harrisbinkhurram",
+  "status": "planned",
+  "story_branch": null,
+  "spec_path": "spec.md",
+  "docs_store_base": null,
+  "prompt_count": 8,
+  "prompts": [
+    {
+      "sequence": 1,
+      "file": "01_skeleton_and_deploy.md",
+      "title": "Skeleton and deploy",
+      "depends_on": [],
+      "status": "planned",
+      "task_flow_folder": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "sequence": 2,
+      "file": "02_scoring_engine.md",
+      "title": "Scoring engine",
+      "depends_on": [
+        1
+      ],
+      "status": "planned",
+      "task_flow_folder": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "sequence": 3,
+      "file": "03_players_and_groups.md",
+      "title": "Players and groups",
+      "depends_on": [
+        1
+      ],
+      "status": "planned",
+      "task_flow_folder": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "sequence": 4,
+      "file": "04_setup_and_round_entry.md",
+      "title": "Setup and round entry",
+      "depends_on": [
+        2,
+        3
+      ],
+      "status": "planned",
+      "task_flow_folder": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "sequence": 5,
+      "file": "05_garden_board_and_bunnies.md",
+      "title": "Garden board and bunnies",
+      "depends_on": [
+        1
+      ],
+      "status": "planned",
+      "task_flow_folder": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "sequence": 6,
+      "file": "06_animations.md",
+      "title": "Hops and celebrations",
+      "depends_on": [
+        4,
+        5
+      ],
+      "status": "planned",
+      "task_flow_folder": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "sequence": 7,
+      "file": "07_undo_resume_history.md",
+      "title": "Undo, resume and history",
+      "depends_on": [
+        4
+      ],
+      "status": "planned",
+      "task_flow_folder": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "sequence": 8,
+      "file": "08_pwa_and_polish.md",
+      "title": "Offline, install and polish",
+      "depends_on": [
+        6,
+        7
+      ],
+      "status": "planned",
+      "task_flow_folder": null,
+      "branch": null,
+      "pr": null
+    }
+  ]
+}
