@@ -1,0 +1,49 @@
+{
+  "task": "HS-01",
+  "branch": "feature/hs-01-skeleton-and-deploy",
+  "locked_at": "2026-11-05",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "The test command runs and passes with at least one test",
+      "verification": "npm test exits 0 and reports branding.test.ts passing",
+      "passes": true
+    },
+    {
+      "id": "AC-2",
+      "description": "The build produces static files that work under the /hopscore/ path",
+      "verification": "npm run build exits 0; dist/index.html asset URLs start with /hopscore/",
+      "passes": true
+    },
+    {
+      "id": "AC-3",
+      "description": "The placeholder page shows the title and tagline in phone portrait",
+      "verification": "manual: npm run preview at 390x844, see 'Hopscore' and 'Dixit Score Tracker', no horizontal scroll",
+      "passes": true
+    },
+    {
+      "id": "AC-4",
+      "description": "CI runs the tests on a pull request into main",
+      "verification": "gh pr checks shows the test job passing on the PR",
+      "passes": false
+    },
+    {
+      "id": "AC-5",
+      "description": "GitHub Pages is enabled with source GitHub Actions",
+      "verification": "gh api repos/harrisbinkhurram/hopscore/pages returns build_type 'workflow'",
+      "passes": false
+    },
+    {
+      "id": "AC-6",
+      "description": "The README explains what the app is, how to run, test and deploy it",
+      "verification": "manual: README.md has those four sections",
+      "passes": true
+    },
+    {
+      "id": "AC-7",
+      "description": "After merge to main, the page is live on GitHub Pages",
+      "verification": "after merge: the deploy job succeeds and https://harrisbinkhurram.github.io/hopscore/ shows the title and tagline",
+      "passes": false
+    }
+  ]
+}
