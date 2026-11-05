@@ -25,7 +25,7 @@
       "id": "AC-4",
       "description": "CI runs the tests on a pull request into main",
       "verification": "gh pr checks shows the test job passing on the PR",
-      "passes": false
+      "passes": true
     },
     {
       "id": "AC-5",
