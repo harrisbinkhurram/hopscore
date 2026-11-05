@@ -16,10 +16,10 @@
       "file": "01_skeleton_and_deploy.md",
       "title": "Skeleton and deploy",
       "depends_on": [],
-      "status": "planned",
-      "task_flow_folder": null,
-      "branch": null,
-      "pr": null
+      "status": "completed",
+      "task_flow_folder": "docs/tasks/HS-01",
+      "branch": "feature/hs-01-skeleton-and-deploy",
+      "pr": 1
     },
     {
       "sequence": 2,
@@ -28,9 +28,9 @@
       "depends_on": [
         1
       ],
-      "status": "planned",
-      "task_flow_folder": null,
-      "branch": null,
+      "status": "in_progress",
+      "task_flow_folder": "docs/tasks/HS-02",
+      "branch": "feature/hs-02-scoring-engine",
       "pr": null
     },
     {
