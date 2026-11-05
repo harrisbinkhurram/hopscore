@@ -1,0 +1,61 @@
+{
+  "task": "HS-05",
+  "branch": "feature/hs-05-garden-board-and-bunnies",
+  "locked_at": "2026-11-05",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "The path has one stone per step (start plus track length), and every 5th stone and the finish show their number",
+      "verification": "track.test.ts; manual: ?board&length=30 and ?board&length=40 show the right count and numbers",
+      "passes": true
+    },
+    {
+      "id": "AC-2",
+      "description": "Bunnies are original, built in code from simple shapes, one colour per player, name floating above",
+      "verification": "manual: ?board&players=6 shows six differently coloured bunnies with readable names; no model files in the repo",
+      "passes": true
+    },
+    {
+      "id": "AC-3",
+      "description": "Each bunny stands on the stone for its score; scores past the end wait on the final stone",
+      "verification": "layout.test.ts; manual: ?board&scores=0,41,20,20",
+      "passes": true
+    },
+    {
+      "id": "AC-4",
+      "description": "Bunnies sharing a stone stand side by side without overlapping",
+      "verification": "layout.test.ts checks a minimum gap; manual: ?board&players=6&scores=3,3,3,3,3,3",
+      "passes": true
+    },
+    {
+      "id": "AC-5",
+      "description": "The camera shows the whole track in portrait and can focus on one bunny and go back",
+      "verification": "camera.test.ts; manual in 360x700 and 390x700 frames: whole track visible, focus buttons work",
+      "passes": true
+    },
+    {
+      "id": "AC-6",
+      "description": "Lighting is warm and bright and the board reads with a dark system theme",
+      "verification": "manual: checked by eye in the dark system theme; the light theme only swaps the background colour and was not checked by eye",
+      "passes": true
+    },
+    {
+      "id": "AC-7",
+      "description": "The scene is light: Three.js is lazy-loaded only for the board, it renders on demand, and decorations are instanced",
+      "verification": "npm run build: main chunk has no Three.js; code review of board.ts render loop",
+      "passes": true
+    },
+    {
+      "id": "AC-8",
+      "description": "Tests, typecheck and build pass locally and in CI on the PR",
+      "verification": "npm test, npm run typecheck, npm run build; gh pr checks green",
+      "passes": false
+    },
+    {
+      "id": "AC-9",
+      "description": "Runs smoothly on a real mid-range Android phone",
+      "verification": "manual on a phone; reported as not confirmed unless checked",
+      "passes": false
+    }
+  ]
+}

@@ -19,6 +19,9 @@ npm run dev        # dev server, open the URL it prints
 
 To try it on a phone on the same Wi-Fi, run `npm run dev -- --host` and open the "Network" URL.
 
+To see the 3D garden board with test scores, add `?board` to the URL (params in
+`src/board/README.md`).
+
 ## Test it
 
 ```sh

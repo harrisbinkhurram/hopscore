@@ -1,0 +1,31 @@
+.hs-debug {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+.hs-debug__stage {
+  flex: 1;
+  min-height: 0;
+}
+
+.hs-debug__bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem max(0.75rem, env(safe-area-inset-right)) max(0.75rem, env(safe-area-inset-bottom))
+    max(0.75rem, env(safe-area-inset-left));
+}
+
+.hs-debug__bar button {
+  min-height: 44px;
+  padding: 0 0.9rem;
+  border: 2px solid var(--chip, var(--accent));
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  font: 600 0.95rem system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
