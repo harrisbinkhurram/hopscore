@@ -11,8 +11,16 @@ const store = createPlayerStore(); // uses localStorage, or memory if that fails
 store.addPlayer('Alice');          // returns { ok, value } or { ok: false, error }
 store.players();                   // recently used first, then by name
 store.markUsed(ids);               // call when a game starts, so these players come first
-store.persistent;                  // false: show "names won't be remembered"
+store.notSavedReason;              // 'storage-off' | 'kept-safe' | null: pick the notice from this
 ```
+
+**Create one store per page and pass it to the screens** (`main.ts` does this). Each store keeps
+its own copy in memory, and the browser does not tell a tab about its own writes, so a second store
+in the same tab would write its old copy over the first one's changes.
+
+`persistent` is false in both `notSavedReason` cases, but they mean different things:
+`'storage-off'` means names won't be remembered; `'kept-safe'` means saved names are still there and
+only this session's changes are not saved.
 
 Changes never throw. A bad name or group returns `{ ok: false, error }` with a short message for
 the screen.
@@ -48,6 +56,9 @@ Games and history (later tasks) use their own keys, so a broken game never costs
 
 - Blocked, or full at start: the app reads what it can, keeps changes in memory, and
   `persistent` is false.
+- Private browsing is **not** detected. Current browsers (Safari 11+, Chrome, Firefox) allow
+  storage in private mode and clear it when the private session ends, so no notice shows there.
+  It cannot be detected reliably.
 - A write fails later (quota): same, from that moment on. Listeners are told.
 - Broken saved data: broken entries are dropped one by one, the rest are kept.
 - Data from a newer app version, or data a migration fails on: read as best it can, never

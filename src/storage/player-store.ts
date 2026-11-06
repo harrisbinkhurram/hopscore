@@ -38,6 +38,10 @@ export interface PlayerStore {
 /**
  * Creates the store. With no argument it uses `localStorage`; pass a fake (or `null` for
  * memory only) in tests.
+ *
+ * Create one per page and share it (main.ts does). A second store in the same tab keeps its own
+ * copy and would write it over the first store's changes: browsers send no `storage` event to
+ * the tab that wrote.
  */
 export function createPlayerStore(backend?: StorageLike | null): PlayerStore {
   const storage = new SafeStorage(backend);

@@ -7,7 +7,8 @@ export interface StorageLike {
 
 /**
  * Key-value storage that never throws. It uses the given storage while that works and falls back
- * to memory for the rest of the session as soon as it does not (private mode, blocked, full).
+ * to memory for the rest of the session as soon as it does not (blocked or full). Current private
+ * browsing modes allow storage and clear it later, so they are not caught here.
  */
 export class SafeStorage {
   private backend: StorageLike | null;

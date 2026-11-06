@@ -24,7 +24,10 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
   let message: { at: 'add' | 'editor'; text: string } | null = null;
   /** Text typed but not saved yet, so a failed save does not wipe it. Cleared when `open` changes. */
   let drafts: Record<string, string> = {};
-  /** The draft key of the input to focus after the next render. */
+  /**
+   * The `data-focus` key to focus after the next render. When unset, whatever had focus before the
+   * render gets it back, because each render rebuilds the screen and the old element is gone.
+   */
   let focusKey: string | null = null;
 
   const set = (next: Partial<{ open: Open; confirmDelete: string | null; message: { at: 'add' | 'editor'; text: string } | null }>) => {
@@ -65,9 +68,14 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
     }
 
     screen.append(addPlayerForm(), playerList(), groupSection());
-    root.replaceChildren(screen);
-    if (focusKey) screen.querySelector<HTMLInputElement>(`[data-draft="${focusKey}"]`)?.focus();
+    const active = document.activeElement;
+    const keep = focusKey ?? (active instanceof HTMLElement && root.contains(active) ? active.dataset.focus : null);
     focusKey = null;
+    root.replaceChildren(screen);
+    if (keep) {
+      // Compare in JS, not in a selector: ids come from saved data and may hold any character.
+      [...screen.querySelectorAll<HTMLElement>('[data-focus]')].find((e) => e.dataset.focus === keep)?.focus();
+    }
   }
 
   /** A text input whose value survives re-renders until the editor closes. */
@@ -80,7 +88,7 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
       maxLength: max,
       autocomplete: 'off',
     });
-    input.dataset.draft = key;
+    input.dataset.focus = `draft:${key}`;
     input.setAttribute('aria-label', label);
     input.addEventListener('input', () => {
       drafts[key] = input.value;
@@ -101,7 +109,7 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
       if (result.ok) {
         // Clear only this field (an open group editor keeps its typed name) and get ready for the next.
         delete drafts.add;
-        focusKey = 'add';
+        focusKey = 'draft:add';
         set({});
       } else {
         set({ message: { at: 'add', text: result.error } });
@@ -126,6 +134,7 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
         set({ open: isOpen ? { kind: 'none' } : { kind: 'player', id: player.id } }),
       );
       row.setAttribute('aria-expanded', String(isOpen));
+      row.dataset.focus = `player:${player.id}`;
       row.append(swatch(player.colour), h('span', { className: 'ps-name', textContent: player.name }),
         h('span', { className: 'ps-meta', textContent: bunnyColour(player.colour).name }));
       const item = h('li', {}, row);
@@ -153,9 +162,12 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
     colours.setAttribute('aria-label', 'Bunny colour');
     for (const c of BUNNY_COLOURS) {
       const chosen = c.id === player.colour;
-      const b = button('', `ps-colour${chosen ? ' is-chosen' : ''}`, () =>
-        apply(store.recolourPlayer(player.id, c.id), { kind: 'player', id: player.id }),
-      );
+      // Stay in the editor without `open`, so a rename typed but not saved is kept.
+      const b = button('', `ps-colour${chosen ? ' is-chosen' : ''}`, () => {
+        const result = store.recolourPlayer(player.id, c.id);
+        set(result.ok ? {} : { message: { at: 'editor', text: result.error } });
+      });
+      b.dataset.focus = `colour:${c.id}`;
       b.setAttribute('role', 'radio');
       b.setAttribute('aria-checked', String(chosen));
       b.append(swatch(c.id), h('span', { textContent: c.name }));
@@ -181,7 +193,8 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
         set({ open: isOpen ? { kind: 'none' } : { kind: 'group', id: group.id, picked: new Set(group.playerIds) } }),
       );
       row.setAttribute('aria-expanded', String(isOpen));
-      const names = group.playerIds.map((id) => store.player(id)?.name ?? '').filter(Boolean).join(', ');
+      row.dataset.focus = `group:${group.id}`;
+      const names =group.playerIds.map((id) => store.player(id)?.name ?? '').filter(Boolean).join(', ');
       row.append(
         h('span', { className: 'ps-name', textContent: group.name }),
         h('span', { className: 'ps-meta', textContent: names || 'No players' }),
@@ -225,6 +238,7 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
     const checks = h('div', { className: 'ps-checks' });
     for (const player of store.players()) {
       const box = h('input', { type: 'checkbox', checked: picked.has(player.id) });
+      box.dataset.focus = `check:${player.id}`;
       box.addEventListener('change', () => {
         if (box.checked) picked.add(player.id);
         else picked.delete(player.id);
@@ -258,10 +272,12 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
   /** Delete needs two taps: the first turns the button into "Tap again to delete". */
   function deleteButton(key: string, label: string, onDelete: () => void) {
     const armed = confirmDelete === key;
-    return button(armed ? 'Tap again to delete' : label, `btn btn-danger${armed ? ' is-armed' : ''}`, () => {
+    const b = button(armed ? 'Tap again to delete' : label, `btn btn-danger${armed ? ' is-armed' : ''}`, () => {
       if (armed) onDelete();
       else set({ confirmDelete: key });
     });
+    b.dataset.focus = `delete:${key}`;
+    return b;
   }
 
   render();

@@ -40,7 +40,7 @@ this task only provides it.
   - Data from a **newer** version than this app knows: loaded as best it can, and the store will not
     write over it (so an old cached tab cannot wipe newer data). The notice still shows.
 - `safe-storage.ts`: wraps `localStorage`. On start it probes with a test write and remove. Any
-  throw (private mode, blocked, quota) → falls back to memory for the session and reports
+  throw (blocked, quota; old Safari private mode) → falls back to memory for the session and reports
   `persistent: false`. A later failed write (quota full) does the same.
 - `player-store.ts`: `createPlayerStore(backend?)` holds the data in memory and saves after every
   change. One key: `hopscore.players`. API:
@@ -62,7 +62,9 @@ this task only provides it.
 
 - `players-screen.ts`: plain DOM, no framework, same style as `main.ts`.
   - Top: "Players" heading, "Back" button.
-  - Notice when not persistent: "Names won't be remembered on this device (storage is off)."
+  - Notice when changes are not saved, worded by `notSavedReason`: storage off or full ("Names
+    won't be remembered on this device."), or saved data kept safe ("Changes won't be saved, to
+    keep your saved names safe. Reload the page to update Hopscore.").
   - Add a player: name field + Add button.
   - Player list (recent first): name, colour swatch with its name. Tap a row to open it: rename
     field, colour picker (8 big swatches with names), Delete (tap twice to confirm, no browser
@@ -151,3 +153,8 @@ See [acceptance_criteria.json](acceptance_criteria.json).
   player no longer clears a half-typed group name. Also: duplicate group names in saved data
   are dropped on load, and the notice says why changes are not saved (storage off, or saved
   data kept safe). 45 tests.
+- 2026-11-06: Self-review of PR #3 (fresh reviewer agent), all five findings fixed: tapping a
+  colour no longer wipes a typed rename; focus survives re-renders (every control has a
+  `data-focus` key); README and JSDoc say to create one store per page; README points at
+  `notSavedReason` instead of `persistent`; docs no longer claim private mode is detected
+  (current private modes allow storage and clear it later, so it cannot be caught).

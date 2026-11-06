@@ -14,7 +14,7 @@ export class FakeStorage implements StorageLike {
   }
 }
 
-/** Storage that throws on every call, like Safari private mode with storage blocked. */
+/** Storage that throws on every call, like a browser with site storage blocked. */
 export class BlockedStorage implements StorageLike {
   getItem(): string | null {
     throw new DOMException('blocked', 'SecurityError');
