@@ -4,3 +4,10 @@ coverage/
 *.log
 .DS_Store
 .vite/
+
+# Agentic Repos (local-only config and install temp files)
+.claude/skill.config
+.claude/settings.local.json
+_install_config.json
+_codemap.md
+_install_manifest.json
