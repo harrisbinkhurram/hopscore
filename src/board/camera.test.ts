@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { fitPoints, focusOn, project, FOCUS_DISTANCE, type Vec3 } from './camera';
+import {
+  clampPose,
+  distanceOf,
+  fitPoints,
+  focusOn,
+  groundPointAt,
+  panBy,
+  poseAt,
+  project,
+  zoomAbout,
+  FOCUS_DISTANCE,
+  type Vec3,
+} from './camera';
 import { buildTrack } from './track';
 
 const PORTRAIT = { fov: 40, aspect: 390 / 844 };
@@ -61,5 +73,49 @@ describe('focusOn', () => {
     expect(s.x).toBeCloseTo(0);
     expect(s.y).toBeCloseTo(0);
     expect(s.depth).toBeCloseTo(FOCUS_DISTANCE);
+  });
+});
+
+describe('gestures', () => {
+  const pose = poseAt({ x: 1, y: 0, z: -4 }, 20);
+
+  it('finds the ground point under a spot on screen', () => {
+    for (const [sx, sy] of [[0, 0], [0.5, -0.4], [-0.8, 0.7]]) {
+      const g = groundPointAt(sx, sy, pose, PORTRAIT)!;
+      expect(g.y).toBe(0);
+      const back = project(g, pose, PORTRAIT);
+      expect(back.x).toBeCloseTo(sx, 6);
+      expect(back.y).toBeCloseTo(sy, 6);
+    }
+  });
+
+  it('finds the target under the middle of the screen', () => {
+    const g = groundPointAt(0, 0, pose, PORTRAIT)!;
+    expect(g.x).toBeCloseTo(1);
+    expect(g.z).toBeCloseTo(-4);
+  });
+
+  it('zooms in towards the pinch point and keeps it under the fingers', () => {
+    const anchor = groundPointAt(0.4, -0.3, pose, PORTRAIT)!;
+    const zoomed = zoomAbout(pose, 0.5, anchor);
+    expect(distanceOf(zoomed)).toBeCloseTo(10);
+    const s = project(anchor, zoomed, PORTRAIT);
+    expect(s.x).toBeCloseTo(0.4, 6);
+    expect(s.y).toBeCloseTo(-0.3, 6);
+  });
+
+  it('pans along the ground without changing the zoom', () => {
+    const moved = panBy(pose, 2, -3);
+    expect(moved.target).toEqual({ x: 3, y: 0, z: -7 });
+    expect(distanceOf(moved)).toBeCloseTo(20);
+  });
+
+  it('keeps the camera inside the limits', () => {
+    const limits = { minDistance: 3, maxDistance: 30, minX: -5, maxX: 5, minZ: -20, maxZ: 10 };
+    const far = clampPose(poseAt({ x: 50, y: 0, z: -90 }, 500), limits);
+    expect(far.target.x).toBe(5);
+    expect(far.target.z).toBe(-20);
+    expect(distanceOf(far)).toBeCloseTo(30);
+    expect(distanceOf(clampPose(poseAt({ x: 0, y: 0, z: 0 }, 1), limits))).toBeCloseTo(3);
   });
 });

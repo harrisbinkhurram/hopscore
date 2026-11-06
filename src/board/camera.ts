@@ -47,8 +47,8 @@ export function poseAt(target: Vec3, distance: number): CameraPose {
  * Projects a point for a camera in `pose`, returning normalised screen coordinates
  * (-1..1 on both axes when on screen) and the depth in front of the camera.
  */
-export function project(point: Vec3, pose: CameraPose, lens: Lens): { x: number; y: number; depth: number } {
-  // Camera basis: forward towards the target, right is +x (the camera never turns sideways).
+/** Camera basis: forward towards the target, right is +x (the camera never turns sideways). */
+function basis(pose: CameraPose) {
   const fx = pose.target.x - pose.position.x;
   const fy = pose.target.y - pose.position.y;
   const fz = pose.target.z - pose.position.z;
@@ -57,6 +57,11 @@ export function project(point: Vec3, pose: CameraPose, lens: Lens): { x: number;
   const r = { x: 1, y: 0, z: 0 };
   // up = right x forward
   const u = { x: r.y * f.z - r.z * f.y, y: r.z * f.x - r.x * f.z, z: r.x * f.y - r.y * f.x };
+  return { f, r, u };
+}
+
+export function project(point: Vec3, pose: CameraPose, lens: Lens): { x: number; y: number; depth: number } {
+  const { f, r, u } = basis(pose);
 
   const dx = point.x - pose.position.x;
   const dy = point.y - pose.position.y;
@@ -154,4 +159,73 @@ export function fitPoints(points: readonly Vec3[], lens: Lens, margin = 0.08, to
 /** The pose that focuses on one point (a bunny). */
 export function focusOn(point: Vec3): CameraPose {
   return poseAt(point, FOCUS_DISTANCE);
+}
+
+/** How far the camera is from what it looks at. */
+export function distanceOf(pose: CameraPose): number {
+  return Math.hypot(
+    pose.position.x - pose.target.x,
+    pose.position.y - pose.target.y,
+    pose.position.z - pose.target.z,
+  );
+}
+
+/**
+ * The point on the ground (y = 0) under a spot on screen, given in normalised
+ * coordinates (-1..1). Null when that spot looks at the sky.
+ */
+export function groundPointAt(sx: number, sy: number, pose: CameraPose, lens: Lens): Vec3 | null {
+  const { f, r, u } = basis(pose);
+  const halfH = Math.tan((lens.fov * Math.PI) / 360);
+  const halfW = halfH * lens.aspect;
+  const d = {
+    x: f.x + r.x * sx * halfW + u.x * sy * halfH,
+    y: f.y + r.y * sx * halfW + u.y * sy * halfH,
+    z: f.z + r.z * sx * halfW + u.z * sy * halfH,
+  };
+  if (d.y >= -1e-6) return null;
+  const t = -pose.position.y / d.y;
+  return { x: pose.position.x + d.x * t, y: 0, z: pose.position.z + d.z * t };
+}
+
+/**
+ * Zooms by `factor` (below 1 moves in) while keeping `anchor` at the same spot on
+ * screen. The view angle never changes, so this is a plain scale about the anchor.
+ */
+export function zoomAbout(pose: CameraPose, factor: number, anchor: Vec3): CameraPose {
+  const scale = (p: Vec3) => ({
+    x: anchor.x + (p.x - anchor.x) * factor,
+    y: anchor.y + (p.y - anchor.y) * factor,
+    z: anchor.z + (p.z - anchor.z) * factor,
+  });
+  return { position: scale(pose.position), target: scale(pose.target) };
+}
+
+/** Moves the camera along the ground by (dx, dz) without turning it. */
+export function panBy(pose: CameraPose, dx: number, dz: number): CameraPose {
+  return {
+    position: { ...pose.position, x: pose.position.x + dx, z: pose.position.z + dz },
+    target: { ...pose.target, x: pose.target.x + dx, z: pose.target.z + dz },
+  };
+}
+
+export interface Limits {
+  minDistance: number;
+  maxDistance: number;
+  minX: number;
+  maxX: number;
+  minZ: number;
+  maxZ: number;
+}
+
+/** Keeps the camera inside the garden and between the nearest and farthest zoom. */
+export function clampPose(pose: CameraPose, limits: Limits): CameraPose {
+  const d = distanceOf(pose);
+  const distance = Math.min(limits.maxDistance, Math.max(limits.minDistance, d));
+  const target = {
+    x: Math.min(limits.maxX, Math.max(limits.minX, pose.target.x)),
+    y: pose.target.y,
+    z: Math.min(limits.maxZ, Math.max(limits.minZ, pose.target.z)),
+  };
+  return poseAt(target, distance);
 }

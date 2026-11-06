@@ -18,6 +18,16 @@ board.showWholeTrack();        // back to the whole track (the default)
 board.dispose();
 ```
 
+Players can move the camera themselves:
+
+- pinch to zoom (about the point between the fingers), drag with one finger to pan;
+- on a computer, the mouse wheel or trackpad zooms about the cursor, and dragging pans;
+- double tap (or double click) goes back to the whole track.
+
+Zoom stops between a close-up and a little past the whole track, and the view stays over the
+garden. After a gesture the camera stays where it was left, also when scores change, until
+`showWholeTrack()`, `focusOn()` or a double tap.
+
 The container sets the size; the board follows it. The board takes its own small `BoardPlayer`
 type and does not enforce a player count (that rule lives with players and groups, task 03).
 Import it lazily (`import()`), so Three.js stays out of the first load.
@@ -41,7 +51,8 @@ Examples: `?board&players=6&scores=3,3,3,3,3,3` (six on one stone),
 |---|---|
 | `track.ts` | stone positions along a gentle S-curve (pure, tested) |
 | `layout.ts` | where each bunny stands; shared stones line up side by side (pure, tested) |
-| `camera.ts` | fit-the-whole-track and focus maths (pure, tested) |
+| `camera.ts` | fit-the-whole-track, focus, zoom, pan and limits maths (pure, tested) |
+| `controls.ts` | pinch, drag, wheel and double-tap handling (tested with a stand-in element) |
 | `bunny.ts` | the code-built bunny |
 | `garden.ts` | grass island, stones, stone numbers, bushes, trees, flowers |
 | `board.ts` | scene, lights, camera, name labels, the public API |

@@ -128,3 +128,12 @@ See [acceptance_criteria.json](acceptance_criteria.json).
 - 2026-11-05: Build: main chunk 2.9 kB; Three.js and the board are a lazy 140 kB (gzip) chunk
   loaded only by `?board`. Vite warns the lazy chunk is over 500 kB before compression; that is
   Three.js itself and within the 1 MB budget.
+- 2026-11-06: Harris asked for a camera that can be pinched to zoom and dragged to pan. Added
+  `controls.ts`: one-finger drag pans (the ground stays under the finger), two-finger pinch zooms
+  about the point between the fingers, mouse wheel zooms about the cursor, double tap goes back
+  to the whole track. Limits: no closer than 2.5 units, no farther than 1.3x the whole-track
+  view, and the view stays over the garden. After a gesture the camera stays put until a reset.
+  The maths is in `camera.ts`, and both files are unit tested. Checked in Chrome: wheel zoom,
+  drag pan, double click, and a synthetic two-finger pinch (the bunnies stayed under the fingers).
+  Not checked with real fingers on a phone.
+

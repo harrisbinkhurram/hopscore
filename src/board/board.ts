@@ -9,7 +9,8 @@ import {
 } from 'three';
 import './board.css';
 import { BUNNY_HEIGHT, createBunny, type Bunny } from './bunny';
-import { fitPoints, focusOn, type CameraPose, type Vec3 } from './camera';
+import { distanceOf, fitPoints, focusOn, type CameraPose, type Limits, type Vec3 } from './camera';
+import { attachControls } from './controls';
 import { createGarden } from './garden';
 import { layoutBunnies, type BoardPlayer, type BunnySpot } from './layout';
 import { buildTrack, STONE_RADIUS } from './track';
@@ -24,7 +25,7 @@ export interface BoardOptions {
 export interface Board {
   /** Updates names, colours and scores. Bunnies jump straight to their stones (task 06 adds the hops). */
   setPlayers(players: readonly BoardPlayer[]): void;
-  /** Frames the whole track. This is the default view. */
+  /** Frames the whole track. This is the default view. Players can also pinch, drag and double-tap. */
   showWholeTrack(): void;
   /** Moves the camera in on one bunny. Unknown ids are ignored. */
   focusOn(playerId: string): void;
@@ -46,7 +47,13 @@ interface BunnyEntry {
   labelHeight: number;
 }
 
-type View = { kind: 'whole' } | { kind: 'focus'; id: string };
+/** `free` means the player has pinched or dragged; the camera then stays where they left it. */
+type View = { kind: 'whole' } | { kind: 'focus'; id: string } | { kind: 'free' };
+
+/** Closest the player can pinch in, in world units from the ground. */
+const MIN_ZOOM_DISTANCE = 2.5;
+/** How far past the whole-track view the player can pinch out. */
+const MAX_ZOOM_OUT = 1.3;
 
 /**
  * Builds the garden board inside `container`. The container decides the size;
@@ -106,6 +113,29 @@ export function createBoard(container: HTMLElement, options: BoardOptions): Boar
       const e = entries.get(view.id);
       if (e) return focusOn({ x: e.spot.x, y: 0.5, z: e.spot.z });
     }
+    if (view.kind === 'free' && pose) return pose;
+    return wholePose();
+  }
+
+  let wholeCache: CameraPose | null = null;
+  function wholePose(): CameraPose {
+    wholeCache ??= fitWholeTrack();
+    return wholeCache;
+  }
+
+  function limits(): Limits {
+    const b = garden.bounds;
+    return {
+      minDistance: MIN_ZOOM_DISTANCE,
+      maxDistance: distanceOf(wholePose()) * MAX_ZOOM_OUT,
+      minX: b.minX,
+      maxX: b.maxX,
+      minZ: b.minZ,
+      maxZ: b.maxZ,
+    };
+  }
+
+  function fitWholeTrack(): CameraPose {
     // The whole track, tall enough to include the bunnies and their names.
     const points: Vec3[] = [];
     for (const s of track.stones) {
@@ -248,6 +278,7 @@ export function createBoard(container: HTMLElement, options: BoardOptions): Boar
       e.stem.remove();
       entries.delete(id);
     }
+    wholeCache = null;
     goTo(targetPose());
   }
 
@@ -258,10 +289,27 @@ export function createBoard(container: HTMLElement, options: BoardOptions): Boar
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
+    wholeCache = null;
     pose = targetPose();
     tween = null;
     requestRender();
   }
+
+  const detachControls = attachControls(renderer.domElement, {
+    pose: () => pose,
+    lens: () => ({ fov: FOV, aspect: aspect() }),
+    limits,
+    move(next) {
+      view = { kind: 'free' };
+      tween = null;
+      pose = next;
+      requestRender();
+    },
+    reset() {
+      view = { kind: 'whole' };
+      goTo(targetPose());
+    },
+  });
 
   const observer = new ResizeObserver(resize);
   observer.observe(container);
@@ -286,6 +334,7 @@ export function createBoard(container: HTMLElement, options: BoardOptions): Boar
       disposed = true;
       if (frame) cancelAnimationFrame(frame);
       observer.disconnect();
+      detachControls();
       darkQuery?.removeEventListener('change', applyTheme);
       for (const e of entries.values()) e.bunny.dispose();
       entries.clear();

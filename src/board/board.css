@@ -4,8 +4,15 @@
   touch-action: manipulation;
 }
 
+.hs-board__canvas:active {
+  cursor: grabbing;
+}
+
 .hs-board__canvas {
   display: block;
+  /* The board handles pinch and drag itself; stop the page zooming or scrolling. */
+  touch-action: none;
+  cursor: grab;
   width: 100%;
   height: 100%;
 }
