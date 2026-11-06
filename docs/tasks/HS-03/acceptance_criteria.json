@@ -1,0 +1,55 @@
+{
+  "task": "HS-03",
+  "branch": "feature/hs-03-players-and-groups",
+  "locked_at": "2026-11-05",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "Players can be added, renamed, recoloured and deleted, and the changes are saved",
+      "verification": "player-store.test.ts: each change is seen by a new store on the same storage",
+      "passes": true
+    },
+    {
+      "id": "AC-2",
+      "description": "Groups can be created, edited and deleted, and the changes are saved; deleting a player removes it from groups",
+      "verification": "player-store.test.ts group cases",
+      "passes": true
+    },
+    {
+      "id": "AC-3",
+      "description": "Recently used players come first",
+      "verification": "player-store.test.ts: markUsed reorders players()",
+      "passes": true
+    },
+    {
+      "id": "AC-4",
+      "description": "Saved data carries a version number and old versions run through migrations on load",
+      "verification": "migrate.test.ts: test migration table v1 -> v3; saved JSON has version",
+      "passes": true
+    },
+    {
+      "id": "AC-5",
+      "description": "Blocked or failing storage never crashes; the app works for the session and shows a notice",
+      "verification": "safe-storage/player-store tests with throwing backends; manual check of the notice",
+      "passes": true
+    },
+    {
+      "id": "AC-6",
+      "description": "Bad saved data never crashes; good entries are kept, broken ones dropped",
+      "verification": "migrate.test.ts bad-data cases",
+      "passes": true
+    },
+    {
+      "id": "AC-7",
+      "description": "A phone-friendly screen manages players and groups (portrait, tap targets at least 48 px)",
+      "verification": "manual: npm run dev at 390 px wide, all actions work, reload keeps data",
+      "passes": true
+    },
+    {
+      "id": "AC-8",
+      "description": "Typecheck, tests and build pass locally and in CI on the PR",
+      "verification": "npm run typecheck, npm test, npm run build; gh pr checks",
+      "passes": true
+    }
+  ]
+}
