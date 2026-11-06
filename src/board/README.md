@@ -54,7 +54,7 @@ Examples: `?board&players=6&scores=3,3,3,3,3,3` (six on one stone),
 | `camera.ts` | fit-the-whole-track, focus, zoom, pan and limits maths (pure, tested) |
 | `controls.ts` | pinch, drag, wheel and double-tap handling (tested with a stand-in element) |
 | `bunny.ts` | the code-built bunny |
-| `garden.ts` | grass island, the trail, stones, stone numbers, bushes, trees, flowers |
+| `garden.ts` | open grass field with lighter and darker patches, the trail, stones, stone numbers, bushes, trees, flowers |
 | `board.ts` | scene, lights, camera, name labels, the public API |
 | `debug.ts`, `debug-params.ts` | the `?board` debug page |
 

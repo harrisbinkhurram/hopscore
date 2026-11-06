@@ -23,13 +23,18 @@ import {
 import { isNumberedStone, STONE_RADIUS, type Track } from './track';
 
 /**
- * The garden: a grassy island, the stepping stones with their numbers, and a few
+ * The garden: an open grass field, the stepping stones with their numbers, and a few
  * bushes, trees and flowers. Every repeated shape is one InstancedMesh, so the
  * whole garden is a handful of draw calls whatever the track length.
  */
 
 const GRASS = 0x8fcf6a;
-const SOIL = 0xa8784e;
+/** Slightly lighter and darker patches, so the open field does not look flat. */
+const GRASS_PATCHES = [0x9bd675, 0x84c460];
+/** The field reaches far past anything the camera can show, so no edge is ever seen. */
+const FIELD_RADIUS = 220;
+/** How far past the path bushes and trees still grow, so the sides look full too. */
+const SCATTER_MARGIN = 10;
 const TRAIL = 0xc7d98a;
 /** Width of the worn trail that links the stones, so the order reads at a glance. */
 const TRAIL_WIDTH = 0.9;
@@ -54,7 +59,7 @@ export function seededRandom(seed: number): () => number {
 
 export interface Garden {
   group: Group;
-  /** Corners of the ground, for framing the camera. */
+  /** The area around the path, for framing the camera and limiting panning. */
   bounds: { minX: number; maxX: number; minZ: number; maxZ: number };
   dispose(): void;
 }
@@ -72,7 +77,7 @@ export function createGarden(track: Track): Garden {
   };
   const lambert = (color: number) => keep(new MeshLambertMaterial({ color, flatShading: true }));
 
-  // Ground: a low, rounded island just bigger than the path.
+  // Area around the path that the camera frames and the player can pan over.
   let minX = Infinity;
   let maxX = -Infinity;
   let minZ = Infinity;
@@ -91,21 +96,18 @@ export function createGarden(track: Track): Garden {
   maxZ += pad;
   const cx = (minX + maxX) / 2;
   const cz = (minZ + maxZ) / 2;
-  const rx = (maxX - minX) / 2;
-  const rz = (maxZ - minZ) / 2;
 
-  const islandGeo = keep(new CylinderGeometry(1, 1.04, 1, 28, 1));
-  const island = new Mesh(islandGeo, lambert(GRASS));
-  island.scale.set(rx * 1.12, 0.4, rz * 1.06);
-  island.position.set(cx, -0.2, cz);
-  const soil = new Mesh(islandGeo, lambert(SOIL));
-  soil.scale.set(rx * 1.13, 0.5, rz * 1.07);
-  soil.position.set(cx, -0.62, cz);
-  group.add(soil, island);
+  // Ground: one wide, flat field. The camera looks down at 58 degrees, so the
+  // horizon never shows and the grass fills the screen edge to edge.
+  const fieldGeo = keep(new CircleGeometry(FIELD_RADIUS, 48));
+  fieldGeo.rotateX(-Math.PI / 2);
+  const field = new Mesh(fieldGeo, lambert(GRASS));
+  field.position.set(cx, 0, cz);
+  group.add(field);
 
   // A worn trail from stone to stone, under the stones: shows which stone comes next.
   const trail = new Mesh(keep(trailGeometry(track)), lambert(TRAIL));
-  trail.position.y = 0.006;
+  trail.position.y = 0.02;
   group.add(trail);
 
   // Stones: one instanced mesh for all of them, coloured per instance.
@@ -137,18 +139,27 @@ export function createGarden(track: Track): Garden {
     group.add(disc);
   }
 
-  // Decorations, kept off the stones and clear of a crowd standing on them.
+  // Decorations, kept off the stones and clear of a crowd standing on them. They
+  // spread a little past the path on every side, so the field looks open, not fenced.
   const clear = (x: number, z: number, margin: number) =>
-    track.stones.every((s) => Math.hypot(s.x - x, s.z - z) > s.radius + margin) &&
-    ((x - cx) / (rx * 1.05)) ** 2 + ((z - cz) / (rz * 1.02)) ** 2 < 1;
+    track.stones.every((s) => Math.hypot(s.x - x, s.z - z) > s.radius + margin);
+  // Past the path area things thin out bit by bit, so there is no hard edge.
+  const thinsOut = (x: number, z: number) => {
+    const out = Math.hypot(Math.max(0, minX - x, x - maxX), Math.max(0, minZ - z, z - maxZ));
+    return rand() > out / SCATTER_MARGIN;
+  };
 
-  const area = (maxX - minX) * (maxZ - minZ);
+  const outMinX = minX - SCATTER_MARGIN;
+  const outMaxX = maxX + SCATTER_MARGIN;
+  const outMinZ = minZ - SCATTER_MARGIN;
+  const outMaxZ = maxZ + SCATTER_MARGIN;
+  const area = (outMaxX - outMinX) * (outMaxZ - outMinZ);
   const spots = (count: number, margin: number, apart: number) => {
     const out: { x: number; z: number; s: number; r: number }[] = [];
     for (let tries = 0; out.length < count && tries < count * 40; tries += 1) {
-      const x = minX + rand() * (maxX - minX);
-      const z = minZ + rand() * (maxZ - minZ);
-      if (clear(x, z, margin) && out.every((o) => Math.hypot(o.x - x, o.z - z) > apart)) {
+      const x = outMinX + rand() * (outMaxX - outMinX);
+      const z = outMinZ + rand() * (outMaxZ - outMinZ);
+      if (clear(x, z, margin) && thinsOut(x, z) && out.every((o) => Math.hypot(o.x - x, o.z - z) > apart)) {
         out.push({ x, z, s: 0.75 + rand() * 0.5, r: rand() * Math.PI * 2 });
       }
     }
@@ -166,6 +177,24 @@ export function createGarden(track: Track): Garden {
     mesh.count = list.length;
     group.add(mesh);
   };
+
+  // Soft patches of lighter and darker grass, flat on the ground.
+  const patchSpots = spots(Math.round(area / 10), 0.6, 1.8);
+  const patches = new InstancedMesh(
+    keep(new CircleGeometry(0.9, 7).rotateX(-Math.PI / 2)),
+    lambert(0xffffff),
+    Math.max(1, patchSpots.length),
+  );
+  patchSpots.forEach((p, i) => {
+    dummy.position.set(p.x, 0.01, p.z);
+    dummy.rotation.set(0, p.r, 0);
+    dummy.scale.set(p.s * 1.6, 1, p.s);
+    dummy.updateMatrix();
+    patches.setMatrixAt(i, dummy.matrix);
+    patches.setColorAt(i, new Color(GRASS_PATCHES[i % GRASS_PATCHES.length]));
+  });
+  patches.count = patchSpots.length;
+  group.add(patches);
 
   const bushSpots = spots(Math.round(area / 14), 1.2, 1.6);
   place(new InstancedMesh(keep(new IcosahedronGeometry(0.42, 0)), lambert(BUSH), Math.max(1, bushSpots.length)), bushSpots, 0.25);

@@ -146,3 +146,7 @@ See [acceptance_criteria.json](acceptance_criteria.json).
   never touch for every way of splitting six players. Net effect: the 30-step track is shorter
   on screen, so the bunnies are bigger in the whole-track view.
 
+- 2026-11-06: Harris asked for an open view instead of the oval island. The ground is now one
+  wide flat field that reaches past anything the camera can show (it looks down at 58 degrees,
+  so no horizon). Soft lighter and darker grass patches break up the green, and bushes, trees
+  and flowers spread past the path and thin out gradually, so there is no hard edge.
