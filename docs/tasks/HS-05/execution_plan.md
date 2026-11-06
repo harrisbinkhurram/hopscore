@@ -136,4 +136,13 @@ See [acceptance_criteria.json](acceptance_criteria.json).
   The maths is in `camera.ts`, and both files are unit tested. Checked in Chrome: wheel zoom,
   drag pan, double click, and a synthetic two-finger pinch (the bunnies stayed under the fingers).
   Not checked with real fingers on a phone.
+- 2026-11-06: Harris asked for bigger stones that hold 3 to 4 bunnies. Stones are now 1.05
+  across in radius (start and finish 1.5, for the whole group). Bunnies gather on the stone: one
+  in the middle, a pair, a triangle, a 2x2 square; five or six stand in two rows of three. Each
+  group now stays on its own stone, so the path no longer needs the 30-degree limit. It winds in
+  side-to-side rows to fill a portrait screen: `buildTrack` tries several amounts of winding and
+  keeps the most compact one where no two stones crowd (neighbours included, on tight bends too).
+  A faint worn trail under the stones shows the order. Tests check that bunnies on any two stones
+  never touch for every way of splitting six players. Net effect: the 30-step track is shorter
+  on screen, so the bunnies are bigger in the whole-track view.
 

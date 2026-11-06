@@ -13,7 +13,7 @@ import { distanceOf, fitPoints, focusOn, type CameraPose, type Limits, type Vec3
 import { attachControls } from './controls';
 import { createGarden } from './garden';
 import { layoutBunnies, type BoardPlayer, type BunnySpot } from './layout';
-import { buildTrack, STONE_RADIUS } from './track';
+import { buildTrack } from './track';
 
 export type { BoardPlayer } from './layout';
 
@@ -140,7 +140,7 @@ export function createBoard(container: HTMLElement, options: BoardOptions): Boar
     const points: Vec3[] = [];
     for (const s of track.stones) {
       points.push(
-        { x: s.x, y: 0, z: s.z + STONE_RADIUS * 1.2 },
+        { x: s.x, y: 0, z: s.z + s.radius * 1.2 },
         { x: s.x, y: BUNNY_HEIGHT + 0.6, z: s.z },
       );
     }

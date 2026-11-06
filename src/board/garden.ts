@@ -1,9 +1,11 @@
 import {
   BufferGeometry,
   CanvasTexture,
+  CatmullRomCurve3,
   CircleGeometry,
   Color,
   ConeGeometry,
+  Float32BufferAttribute,
   CylinderGeometry,
   Group,
   IcosahedronGeometry,
@@ -14,6 +16,7 @@ import {
   Object3D,
   OctahedronGeometry,
   SRGBColorSpace,
+  Vector3,
   type Material,
   type Texture,
 } from 'three';
@@ -27,6 +30,9 @@ import { isNumberedStone, STONE_RADIUS, type Track } from './track';
 
 const GRASS = 0x8fcf6a;
 const SOIL = 0xa8784e;
+const TRAIL = 0xc7d98a;
+/** Width of the worn trail that links the stones, so the order reads at a glance. */
+const TRAIL_WIDTH = 0.9;
 const STONE = 0xe9dfcf;
 const STONE_START = 0xffe08a;
 const STONE_FINISH = 0xffc94d;
@@ -77,8 +83,8 @@ export function createGarden(track: Track): Garden {
     minZ = Math.min(minZ, s.z);
     maxZ = Math.max(maxZ, s.z);
   }
-  // Wide enough for six bunnies standing side by side on any stone.
-  const pad = 3;
+  // Room around the outermost stones for a crowd of bunnies and a few bushes.
+  const pad = 2.6;
   minX -= pad;
   maxX += pad;
   minZ -= pad;
@@ -97,6 +103,11 @@ export function createGarden(track: Track): Garden {
   soil.position.set(cx, -0.62, cz);
   group.add(soil, island);
 
+  // A worn trail from stone to stone, under the stones: shows which stone comes next.
+  const trail = new Mesh(keep(trailGeometry(track)), lambert(TRAIL));
+  trail.position.y = 0.006;
+  group.add(trail);
+
   // Stones: one instanced mesh for all of them, coloured per instance.
   const stoneGeo = keep(new CylinderGeometry(STONE_RADIUS, STONE_RADIUS * 1.08, 0.14, 9));
   const stones = new InstancedMesh(stoneGeo, lambert(0xffffff), track.stones.length);
@@ -105,8 +116,8 @@ export function createGarden(track: Track): Garden {
   for (const s of track.stones) {
     dummy.position.set(s.x, 0.05, s.z);
     dummy.rotation.set(0, rand() * Math.PI, 0);
-    const big = s.index === 0 || s.index === track.length ? 1.18 : 1;
-    dummy.scale.set(big, 1, big);
+    const size = s.radius / STONE_RADIUS;
+    dummy.scale.set(size, 1, size);
     dummy.updateMatrix();
     stones.setMatrixAt(s.index, dummy.matrix);
     const colour = s.index === 0 ? STONE_START : s.index === track.length ? STONE_FINISH : STONE;
@@ -115,28 +126,29 @@ export function createGarden(track: Track): Garden {
   group.add(stones);
 
   // Numbers on every 5th stone and the finish: a flat disc with a canvas texture.
-  const numberDisc = keep(new CircleGeometry(STONE_RADIUS * 0.9, 20));
+  const numberDisc = keep(new CircleGeometry(STONE_RADIUS * 0.75, 20));
   numberDisc.rotateX(-Math.PI / 2);
   for (const s of track.stones) {
     if (!isNumberedStone(s.index, track.length)) continue;
     const texture = keep(numberTexture(s.index));
     const disc = new Mesh(numberDisc, keep(new MeshBasicMaterial({ map: texture, transparent: true })));
     disc.position.set(s.x, 0.125, s.z);
+    disc.scale.setScalar(s.radius / STONE_RADIUS);
     group.add(disc);
   }
 
-  // Decorations, kept off the path.
-  const clear = (x: number, z: number, r: number) =>
-    track.stones.every((s) => Math.hypot(s.x - x, s.z - z) > r) &&
+  // Decorations, kept off the stones and clear of a crowd standing on them.
+  const clear = (x: number, z: number, margin: number) =>
+    track.stones.every((s) => Math.hypot(s.x - x, s.z - z) > s.radius + margin) &&
     ((x - cx) / (rx * 1.05)) ** 2 + ((z - cz) / (rz * 1.02)) ** 2 < 1;
 
   const area = (maxX - minX) * (maxZ - minZ);
-  const spots = (count: number, keepOut: number) => {
+  const spots = (count: number, margin: number, apart: number) => {
     const out: { x: number; z: number; s: number; r: number }[] = [];
     for (let tries = 0; out.length < count && tries < count * 40; tries += 1) {
       const x = minX + rand() * (maxX - minX);
       const z = minZ + rand() * (maxZ - minZ);
-      if (clear(x, z, keepOut) && out.every((o) => Math.hypot(o.x - x, o.z - z) > keepOut * 0.8)) {
+      if (clear(x, z, margin) && out.every((o) => Math.hypot(o.x - x, o.z - z) > apart)) {
         out.push({ x, z, s: 0.75 + rand() * 0.5, r: rand() * Math.PI * 2 });
       }
     }
@@ -155,15 +167,15 @@ export function createGarden(track: Track): Garden {
     group.add(mesh);
   };
 
-  const bushSpots = spots(Math.round(area / 14), 2.6);
+  const bushSpots = spots(Math.round(area / 14), 1.2, 1.6);
   place(new InstancedMesh(keep(new IcosahedronGeometry(0.42, 0)), lambert(BUSH), Math.max(1, bushSpots.length)), bushSpots, 0.25);
 
-  const treeSpots = spots(Math.round(area / 45), 2.9);
+  const treeSpots = spots(Math.round(area / 45), 1.5, 2.2);
   const treeCount = Math.max(1, treeSpots.length);
   place(new InstancedMesh(keep(new CylinderGeometry(0.1, 0.14, 0.7, 5)), lambert(TRUNK), treeCount), treeSpots, 0.35);
   place(new InstancedMesh(keep(new ConeGeometry(0.6, 1.3, 6)), lambert(LEAVES), treeCount), treeSpots, 1.25);
 
-  const flowerSpots = spots(Math.round(area / 3), 0.9);
+  const flowerSpots = spots(Math.round(area / 3), 0.25, 0.7);
   const flowers = new InstancedMesh(
     keep(new OctahedronGeometry(0.09, 0)),
     lambert(0xffffff),
@@ -205,4 +217,34 @@ function numberTexture(n: number): CanvasTexture {
   texture.colorSpace = SRGBColorSpace;
   texture.anisotropy = 4;
   return texture;
+}
+
+/** A flat ribbon along a smooth curve through the stone centres. */
+function trailGeometry(track: Track): BufferGeometry {
+  const curve = new CatmullRomCurve3(track.stones.map((s) => new Vector3(s.x, 0, s.z)));
+  const count = track.stones.length * 8;
+  const points = curve.getSpacedPoints(count);
+  const positions: number[] = [];
+  const indices: number[] = [];
+  const half = TRAIL_WIDTH / 2;
+  points.forEach((p, i) => {
+    const a = points[Math.max(0, i - 1)];
+    const b = points[Math.min(points.length - 1, i + 1)];
+    const dx = b.x - a.x;
+    const dz = b.z - a.z;
+    const d = Math.hypot(dx, dz) || 1;
+    // Across the trail: the direction of travel turned 90 degrees.
+    const ax = (-dz / d) * half;
+    const az = (dx / d) * half;
+    positions.push(p.x + ax, 0, p.z + az, p.x - ax, 0, p.z - az);
+    if (i > 0) {
+      const k = i * 2;
+      indices.push(k - 2, k, k - 1, k - 1, k, k + 1);
+    }
+  });
+  const g = new BufferGeometry();
+  g.setAttribute('position', new Float32BufferAttribute(positions, 3));
+  g.setIndex(indices);
+  g.computeVertexNormals();
+  return g;
 }

@@ -49,12 +49,12 @@ Examples: `?board&players=6&scores=3,3,3,3,3,3` (six on one stone),
 
 | File | What it does |
 |---|---|
-| `track.ts` | stone positions along a gentle S-curve (pure, tested) |
-| `layout.ts` | where each bunny stands; shared stones line up side by side (pure, tested) |
+| `track.ts` | stone positions along a winding path; picks the most compact path where no stones crowd (pure, tested) |
+| `layout.ts` | where each bunny stands; up to four gather on one stone, five or six in two rows (pure, tested) |
 | `camera.ts` | fit-the-whole-track, focus, zoom, pan and limits maths (pure, tested) |
 | `controls.ts` | pinch, drag, wheel and double-tap handling (tested with a stand-in element) |
 | `bunny.ts` | the code-built bunny |
-| `garden.ts` | grass island, stones, stone numbers, bushes, trees, flowers |
+| `garden.ts` | grass island, the trail, stones, stone numbers, bushes, trees, flowers |
 | `board.ts` | scene, lights, camera, name labels, the public API |
 | `debug.ts`, `debug-params.ts` | the `?board` debug page |
 

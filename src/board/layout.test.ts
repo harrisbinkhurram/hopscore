@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { BUNNY_FOOTPRINT, BUNNY_GAP, layoutBunnies, stoneForScore, type BoardPlayer } from './layout';
+import { BUNNY_FOOTPRINT, clusterOffsets, layoutBunnies, stoneForScore, type BoardPlayer } from './layout';
 import { buildTrack } from './track';
-
 
 function players(scores: number[]): BoardPlayer[] {
   return scores.map((score, i) => ({ id: `p${i}`, name: `P${i}`, color: '#ffffff', score }));
@@ -16,15 +15,13 @@ function anyTouching(spots: { x: number; z: number }[]): boolean {
   return spots.some((a, i) => spots.slice(i + 1).some((b) => touching(a, b)));
 }
 
-function minGap(spots: { x: number; z: number }[]): number {
-  let min = Infinity;
-  for (let i = 0; i < spots.length; i += 1) {
-    for (let j = i + 1; j < spots.length; j += 1) {
-      min = Math.min(min, Math.hypot(spots[i].x - spots[j].x, spots[i].z - spots[j].z));
-    }
-  }
-  return min;
-}
+/** Every way to split six players over two stones. */
+const SPLITS = [
+  [6, 0],
+  [5, 1],
+  [4, 2],
+  [3, 3],
+];
 
 describe('stoneForScore', () => {
   it('keeps scores on the track', () => {
@@ -34,6 +31,30 @@ describe('stoneForScore', () => {
     expect(stoneForScore(41, 30)).toBe(30);
     expect(stoneForScore(-2, 30)).toBe(0);
     expect(stoneForScore(Number.NaN, 30)).toBe(0);
+  });
+});
+
+describe('clusterOffsets', () => {
+  it.each([1, 2, 3, 4, 5, 6])('places %i bunnies without overlap, centred on the stone', (n) => {
+    const offsets = clusterOffsets(n);
+    expect(offsets).toHaveLength(n);
+    expect(anyTouching(offsets)).toBe(false);
+    const cx = offsets.reduce((a, o) => a + o.x, 0) / n;
+    expect(cx).toBeCloseTo(0);
+  });
+
+  it.each([1, 2, 3, 4])('keeps %i bunnies standing on a stone on the way', (n) => {
+    const track = buildTrack(30);
+    for (const o of clusterOffsets(n)) {
+      expect(Math.hypot(o.x, o.z)).toBeLessThan(track.stones[10].radius * 0.75);
+    }
+  });
+
+  it.each([5, 6])('keeps %i bunnies standing on the big start stone', (n) => {
+    const track = buildTrack(30);
+    for (const o of clusterOffsets(n)) {
+      expect(Math.hypot(o.x, o.z)).toBeLessThan(track.stones[0].radius * 0.85);
+    }
   });
 });
 
@@ -59,32 +80,26 @@ describe('layoutBunnies', () => {
     expect(spots[0].shared).toBe(2);
   });
 
-  it.each([2, 3, 4, 5, 6])('stands %i bunnies on one stone side by side without overlap', (n) => {
+  it.each([2, 3, 4, 5, 6])('gathers %i bunnies on one stone without overlap', (n) => {
     for (const stone of [0, 3, 8, 15, 30]) {
       const spots = layoutBunnies(players(Array(n).fill(stone)), track);
       expect(new Set(spots.map((s) => s.slot)).size).toBe(n);
-      expect(minGap(spots)).toBeGreaterThanOrEqual(BUNNY_GAP - 1e-9);
-      expect(anyTouching(spots)).toBe(false);
-      // The group is centred on the stone.
-      const cx = spots.reduce((a, s) => a + s.x, 0) / n;
-      const cz = spots.reduce((a, s) => a + s.z, 0) / n;
-      expect(cx).toBeCloseTo(track.stones[stone].x);
-      expect(cz).toBeCloseTo(track.stones[stone].z);
-    }
-  });
-
-  it.each([10, 30, 60])('keeps crowded neighbouring stones apart (length %i)', (len) => {
-    const t = buildTrack(len);
-    for (let stone = 0; stone < len; stone += 1) {
-      const spots = layoutBunnies(players([stone, stone, stone, stone + 1, stone + 1, stone + 1]), t);
       expect(anyTouching(spots)).toBe(false);
     }
   });
 
-  it('lines a shared stone up left to right on screen', () => {
-    for (let stone = 0; stone <= 30; stone += 1) {
-      const spots = layoutBunnies(players([stone, stone, stone]), track);
-      expect(spots[0].x).toBeLessThanOrEqual(spots[2].x + 1e-9);
-    }
-  });
+  it.each([5, 10, 20, 30, 40, 60])(
+    'never lets bunnies on two different stones touch, for any split of six (length %i)',
+    (len) => {
+      const t = buildTrack(len);
+      for (let a = 0; a <= len; a += 1) {
+        for (let b = a + 1; b <= len; b += 1) {
+          for (const [na, nb] of SPLITS) {
+            const spots = layoutBunnies(players([...Array(na).fill(a), ...Array(nb).fill(b)]), t);
+            expect(anyTouching(spots)).toBe(false);
+          }
+        }
+      }
+    },
+  );
 });
