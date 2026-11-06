@@ -1,0 +1,61 @@
+{
+  "task": "HS-02",
+  "branch": "feature/hs-02-scoring-engine",
+  "locked_at": "2026-11-05",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "Every row of the spec's scoring table scores correctly for 3 to 6 players",
+      "verification": "score.test.ts table rows pass",
+      "passes": true
+    },
+    {
+      "id": "AC-2",
+      "description": "The +1 per vote bonus goes to every non-storyteller and never to the storyteller",
+      "verification": "score.test.ts bonus rows pass",
+      "passes": true
+    },
+    {
+      "id": "AC-3",
+      "description": "Each player's result carries short reasons with points, such as 'found the storyteller: +3' and '2 votes on your card: +2'",
+      "verification": "score.test.ts checks reason text",
+      "passes": true
+    },
+    {
+      "id": "AC-4",
+      "description": "3-player rules are applied automatically for 3 players and live in one file",
+      "verification": "rules.ts holds them; rules.test.ts / score.test.ts pass",
+      "passes": true
+    },
+    {
+      "id": "AC-5",
+      "description": "Impossible input is rejected with a clear message",
+      "verification": "validate.test.ts one row per case passes",
+      "passes": true
+    },
+    {
+      "id": "AC-6",
+      "description": "Storyteller rotation follows seat order and wraps",
+      "verification": "rotation.test.ts passes",
+      "passes": true
+    },
+    {
+      "id": "AC-7",
+      "description": "Game ends at the track length or by hand; highest total wins; ties share",
+      "verification": "game.test.ts passes",
+      "passes": true
+    },
+    {
+      "id": "AC-8",
+      "description": "Tests, typecheck and build pass locally and in CI on the PR",
+      "verification": "npm test, npm run typecheck, npm run build; gh pr checks green",
+      "passes": true
+    },
+    {
+      "id": "AC-9",
+      "description": "Plan manifest shows prompt 01 completed with its branch and PR",
+      "verification": "docs/plan/plan_manifest.json",
+      "passes": true
+    }
+  ]
+}
