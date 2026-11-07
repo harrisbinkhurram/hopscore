@@ -78,9 +78,9 @@
         4,
         5
       ],
-      "status": "planned",
-      "task_flow_folder": null,
-      "branch": null,
+      "status": "in_progress",
+      "task_flow_folder": "docs/tasks/HS-06",
+      "branch": "feature/hs-06-hops-and-celebrations",
       "pr": null
     },
     {

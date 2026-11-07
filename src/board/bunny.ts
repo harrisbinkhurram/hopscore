@@ -15,8 +15,9 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 /**
  * An original low-poly bunny, built from a few simple shapes.
  *
- * Parts that share a colour are merged into one mesh, so each bunny is 5 draw
- * calls (fur, inner ears, eyes, tail, shadow). Geometry is built once and shared.
+ * Parts that share a colour are merged into one mesh. Each ear is its own pair of meshes on a
+ * pivot so it can droop, so a bunny is 8 draw calls (fur, two ears, two inner ears, eyes, tail,
+ * shadow). Geometry is built once and shared.
  * The bunny faces +z (towards the camera). Its feet are at y = 0.
  */
 
@@ -30,8 +31,11 @@ const BUNNY_SCALE = 1.3;
 export const BUNNY_HEIGHT = 1.12 * BUNNY_SCALE;
 
 interface Parts {
+  /** Body, head and feet. */
   fur: BufferGeometry;
-  innerEars: BufferGeometry;
+  /** Per side (right, left), built around the ear's pivot. */
+  ears: [BufferGeometry, BufferGeometry];
+  innerEars: [BufferGeometry, BufferGeometry];
   eyes: BufferGeometry;
   tail: BufferGeometry;
   shadow: BufferGeometry;
@@ -53,12 +57,20 @@ function capsule(radius: number, length: number): BufferGeometry {
   return new CapsuleGeometry(radius, length, 2, 6).toNonIndexed();
 }
 
+/** Where an ear joins the head, in model units. The ear turns about this point. */
+function earPivot(side: 1 | -1) {
+  return { x: side * 0.07, y: 0.74, z: 0.05 };
+}
+
+/** One ear, built so that the pivot is at its origin. */
 function ear(side: 1 | -1, inner: boolean): BufferGeometry {
   const g = inner ? capsule(0.035, 0.26) : capsule(0.07, 0.3);
   g.scale(1, 1, inner ? 0.35 : 0.55);
   g.rotateZ(-side * 0.22);
   g.rotateX(-0.15);
   g.translate(side * 0.1, 0.9, inner ? 0.075 : 0.04);
+  const p = earPivot(side);
+  g.translate(-p.x, -p.y, -p.z);
   return g;
 }
 
@@ -77,9 +89,9 @@ function buildParts(): Parts {
   const footR = footL.clone();
   footR.translate(0.26, 0, 0);
 
-  const fur = mergeGeometries([body, head, ear(1, false), ear(-1, false), footL, footR])!;
-
-  const innerEars = mergeGeometries([ear(1, true), ear(-1, true)])!;
+  const fur = mergeGeometries([body, head, footL, footR])!;
+  const ears: [BufferGeometry, BufferGeometry] = [ear(1, false), ear(-1, false)];
+  const innerEars: [BufferGeometry, BufferGeometry] = [ear(1, true), ear(-1, true)];
 
   const eyeL = ico(0.035, 0);
   eyeL.translate(-0.085, 0.68, 0.3);
@@ -97,7 +109,7 @@ function buildParts(): Parts {
   shadow.rotateX(-Math.PI / 2);
   shadow.translate(0, 0.012, 0);
 
-  return { fur, innerEars, eyes, tail, shadow };
+  return { fur, ears, innerEars, eyes, tail, shadow };
 }
 
 function material(key: keyof typeof sharedMaterials): Material {
@@ -114,9 +126,23 @@ function material(key: keyof typeof sharedMaterials): Material {
   return m;
 }
 
+/** How a bunny is moving right now. Every field is optional; missing ones are at rest. */
+export interface BunnyPose {
+  /** Height of the feet above the ground, in model units. */
+  lift?: number;
+  /** Body scale for squash and stretch; 1 is at rest. */
+  squash?: { x: number; y: number; z: number };
+  /** Turn about its own upright axis, radians. */
+  spin?: number;
+  /** 0 is ears up, 1 is fully drooped. */
+  droop?: number;
+}
+
 export interface Bunny {
+  /** Place and turn this group to put the bunny on the board. */
   group: Group;
   setColor(color: string): void;
+  setPose(pose: BunnyPose): void;
   dispose(): void;
 }
 
@@ -125,20 +151,46 @@ export function createBunny(color: string): Bunny {
   shared ??= buildParts();
   const furMaterial = new MeshLambertMaterial({ color: new Color(color), flatShading: true });
 
+  const parts = shared;
   const group = new Group();
   group.scale.setScalar(BUNNY_SCALE);
-  const fur = new Mesh(shared.fur, furMaterial);
-  const inner = new Mesh(shared.innerEars, material('inner'));
-  const eyes = new Mesh(shared.eyes, material('eye'));
-  const tail = new Mesh(shared.tail, material('tail'));
-  const shadow = new Mesh(shared.shadow, material('shadow'));
+  // The body moves (hops, squashes, spins); the shadow stays on the ground.
+  const body = new Group();
+  const fur = new Mesh(parts.fur, furMaterial);
+  const eyes = new Mesh(parts.eyes, material('eye'));
+  const tail = new Mesh(parts.tail, material('tail'));
+  const ears = ([1, -1] as const).map((side, i) => {
+    const pivot = new Group();
+    const p = earPivot(side);
+    pivot.position.set(p.x, p.y, p.z);
+    pivot.add(new Mesh(parts.ears[i], furMaterial), new Mesh(parts.innerEars[i], material('inner')));
+    body.add(pivot);
+    return { pivot, side };
+  });
+  body.add(fur, eyes, tail);
+  const shadow = new Mesh(parts.shadow, material('shadow'));
   shadow.renderOrder = -1;
-  group.add(shadow, fur, inner, eyes, tail);
+  group.add(shadow, body);
 
   return {
     group,
     setColor(next) {
       furMaterial.color.set(next);
+    },
+    setPose(pose) {
+      const lift = pose.lift ?? 0;
+      const s = pose.squash ?? { x: 1, y: 1, z: 1 };
+      body.position.y = lift;
+      body.scale.set(s.x, s.y, s.z);
+      body.rotation.y = pose.spin ?? 0;
+      // A smaller, fainter-looking shadow while in the air.
+      shadow.scale.setScalar(1 / (1 + lift * 1.2));
+      const droop = pose.droop ?? 0;
+      for (const ear of ears) {
+        // Out to the side and back, so drooped ears hang beside the head.
+        ear.pivot.rotation.z = -ear.side * droop * 1.8;
+        ear.pivot.rotation.x = -droop * 0.35;
+      }
     },
     dispose() {
       furMaterial.dispose();

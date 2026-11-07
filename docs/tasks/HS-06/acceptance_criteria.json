@@ -1,0 +1,73 @@
+{
+  "task": "HS-06",
+  "branch": "feature/hs-06-hops-and-celebrations",
+  "locked_at": "2026-11-07",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "The screen after a round shows the garden board with a compact score readout (rank, name, points this round, total) under it, also in the winner view",
+      "verification": "board-input.test.ts; manual: Chrome at 390x844 and 320x700, after a round and in the winner view, no sideways scroll",
+      "passes": true
+    },
+    {
+      "id": "AC-2",
+      "description": "After Confirm, each bunny that scored hops forward one stone at a time, one bunny after another, smallest gain first with ties in seat order",
+      "verification": "choreography.test.ts (order, consecutive stones, clamp at finish); motion.test.ts foldStones ends every bunny on stoneForScore(after); manual: play a round with different gains",
+      "passes": true
+    },
+    {
+      "id": "AC-3",
+      "description": "Hops have squash and stretch and a dust puff on each landing",
+      "verification": "motion.test.ts (hop and squash curves); manual: watch a hop in Chrome",
+      "passes": true
+    },
+    {
+      "id": "AC-4",
+      "description": "A bunny that gained 5 or more spins and throws a burst of petals",
+      "verification": "choreography.test.ts (big from 5, cheer at the finish); manual: a round with a 5+ gain",
+      "passes": true
+    },
+    {
+      "id": "AC-5",
+      "description": "A storyteller who scored 0 droops its ears for a moment",
+      "verification": "choreography.test.ts (droop beat); manual: a round where everyone found the card",
+      "passes": true
+    },
+    {
+      "id": "AC-6",
+      "description": "When the game ends (on the track or with End game), the winner dances and the others clap",
+      "verification": "choreography.test.ts (finale only with winners, finale-only plan); board-input.test.ts (winners only when over); manual: win on the track and End game",
+      "passes": true
+    },
+    {
+      "id": "AC-7",
+      "description": "The camera follows the moving bunny, then settles back on the whole track",
+      "verification": "manual: Chrome, watch a round end on the whole-track view; a drag during play stops the follow",
+      "passes": true
+    },
+    {
+      "id": "AC-8",
+      "description": "A tap on the board or the Skip button puts every bunny on its final stone at once",
+      "verification": "controls.test.ts (tap fires on a tap, not on a drag, pinch or pointercancel); manual: tap and button mid-round, positions match the readout",
+      "passes": true
+    },
+    {
+      "id": "AC-9",
+      "description": "With reduced motion, bunnies glide to their stones with no bounce, effects or camera moves",
+      "verification": "motion.test.ts (reduced timeline has no dust, petals, droop, cheer, finale, follow or settle events); manual: matchMedia override before Confirm, and ?board&motion=reduce",
+      "passes": true
+    },
+    {
+      "id": "AC-10",
+      "description": "The round plays once: Home then Resume, or arming End game, shows final positions without replaying, and the in-game guards still work",
+      "verification": "manual: Chrome, Resume and arm End game after a round; pull-to-refresh class and leave-page prompt still set while in game",
+      "passes": true
+    },
+    {
+      "id": "AC-11",
+      "description": "Tests, typecheck and build pass, and Three.js stays out of the first-load chunk",
+      "verification": "npm test && npm run build; check dist main chunk has no three.js",
+      "passes": true
+    }
+  ]
+}
