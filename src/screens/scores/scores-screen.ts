@@ -33,6 +33,14 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
   let confirmEnd = false;
   let armedAt = 0;
   let firstRender = true;
+  /**
+   * Undo, Redo and Done act on one tap and open a new screen with another button in the same
+   * place, so a tap this soon after opening is the second half of a double tap: ignore it.
+   */
+  const openedAt = Date.now();
+  const once = (action: () => void) => () => {
+    if (Date.now() - openedAt >= SECOND_TAP_DELAY_MS) action();
+  };
 
   // The board lives for this screen visit. Re-renders move the same stage, so it never replays.
   const stage = h('div', { className: 'sc-stage' });
@@ -100,7 +108,7 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
     screen.append(list, h('p', { className: 'screen-hint sc-center', textContent: `First to ${game.trackLength} wins.` }));
 
     if (over) {
-      screen.append(button('Done', 'btn btn-primary btn-wide sc-main', options.onDone));
+      screen.append(button('Done', 'btn btn-primary btn-wide sc-main', once(options.onDone)));
       screen.append(undoRow());
     } else {
       const next = game.seats.find((s) => s.id === game.storyteller)!;
@@ -123,12 +131,12 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
     const row = h('div', { className: 'sc-undo' });
     if (canUndo(game)) {
       const label = game.endedByHand ? 'Undo End game' : `Undo round ${game.rounds.length}`;
-      row.append(button(label, 'btn', options.onUndo));
+      row.append(button(label, 'btn', once(options.onUndo)));
     }
     const redo = nextRedo(game);
     if (redo) {
       const label = redo.kind === 'end' ? 'Redo End game' : `Redo round ${game.rounds.length + 1}`;
-      row.append(button(label, 'btn', options.onRedo));
+      row.append(button(label, 'btn', once(options.onRedo)));
     }
     return row;
   }

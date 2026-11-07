@@ -115,24 +115,28 @@ export function redoNext(game: Game): Game {
 
 /**
  * Rebuilds a saved game, or null when it breaks a rule: bad seats or track, a storyteller who
- * is not seated, a round without one score per seat in seat order, or reasons that are unknown
- * or do not add up. Totals are always worked out again from the rounds.
+ * is not seated, a round without one score per seat in seat order, reasons that are unknown or
+ * do not add up, or a round played after someone had already reached the finish. Totals are always worked out again from the rounds.
  */
 export function restoreGame(saved: SavedGameParts): Game | null {
   const ids = saved.seats.map((s) => s.id);
   if (setupProblems(ids, saved.trackLength).length > 0) return null;
   if (!ids.includes(saved.storyteller)) return null;
   const rounds: RoundResult[] = [];
+  let totals = startingTotals(ids);
   for (const round of saved.rounds) {
     if (!validRound(round, ids)) return null;
+    // The app never adds a round once someone has reached the finish.
+    if (isGameOver(totals, saved.trackLength)) return null;
     rounds.push(round);
+    totals = addRound(totals, round);
   }
   return {
     seats: [...saved.seats],
     trackLength: saved.trackLength,
     storyteller: saved.storyteller,
     rounds,
-    totals: totalsOf(ids, rounds),
+    totals,
     endedByHand: saved.endedByHand,
     redo: restoreRedo(saved, ids),
   };

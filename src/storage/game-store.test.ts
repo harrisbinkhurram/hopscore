@@ -47,6 +47,12 @@ describe('game store: the game in progress', () => {
     expect(saved?.draft).toBeNull();
   });
 
+  it('keeps when the game ended', () => {
+    const backend = new FakeStorage();
+    createGameStore(backend).saveGame({ ...SAVED, endedAt: 99 });
+    expect(createGameStore(backend).savedGame()?.endedAt).toBe(99);
+  });
+
   it('saves only the saved fields, not totals', () => {
     const backend = new FakeStorage();
     const withTotals = { ...SAVED, game: { ...SAVED.game, totals: { a: 0, b: 0, c: 0 } } };

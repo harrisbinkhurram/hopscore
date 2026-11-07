@@ -31,7 +31,8 @@ purpose: votes being entered are only saved on Home, and storage can be blocked)
 warns before it replaces the game. Two-tap buttons ignore a second tap within
 `SECOND_TAP_DELAY_MS` (`dom.ts`).
 
-Undo and Redo sit on the scores screen and the winner view, one tap each. Undo takes back End
+Undo and Redo sit on the scores screen and the winner view, one tap each. They and Done ignore a
+tap within `SECOND_TAP_DELAY_MS` of the screen opening, so a double tap cannot act twice. Undo takes back End
 game, or else the last round; Redo puts back what was undone; a new round or End game clears Redo.
 
 ## The board on the scores screen

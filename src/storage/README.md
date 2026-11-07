@@ -52,7 +52,8 @@ One key, `hopscore.players`:
 broken game never costs the players:
 
 - `hopscore.game`: `{ version, game: { seats, trackLength, storyteller, rounds, endedByHand,
-  redo }, view, draft }`. Saved after every step of a game (`main.ts`). Totals are not saved:
+  redo }, view, draft, endedAt? }`. Saved after every step of a game (`main.ts`); `endedAt` is
+  when the game became over, so a game closed on the winner view keeps its real date. Totals are not saved:
   they are worked out from the rounds. Nothing in the shape limits the number of players.
 - `hopscore.history`: `{ version, entries }`, finished games newest first, at most
   `HISTORY_LIMIT` (10). Each entry: id, date, track length, rounds played, ended by hand, and

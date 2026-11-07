@@ -22,6 +22,8 @@ let game: Game | null = null;
 let gameView: 'round' | 'scores' = 'round';
 /** Votes entered before Home was tapped mid-round. */
 let roundDraft: RoundDraft | undefined;
+/** When the game became over, so the history shows that date even if Done comes later. */
+let endedAt: number | undefined;
 
 loadSavedGame();
 
@@ -37,7 +39,7 @@ function loadSavedGame() {
   if (!restored) {
     games.clearGame();
   } else if (gameOver(restored)) {
-    if (!games.gameKeptSafe) finishGame(restored);
+    if (!games.gameKeptSafe) finishGame(restored, saved.endedAt);
   } else {
     game = restored;
     gameView = saved.view;
@@ -46,18 +48,20 @@ function loadSavedGame() {
 }
 
 function saveGame() {
-  if (game) games.saveGame({ game, view: gameView, draft: roundDraft ?? null });
-  else games.clearGame();
+  if (!game) return games.clearGame();
+  // Stamped once when the game becomes over; Undo reopening it clears the stamp.
+  endedAt = gameOver(game) ? (endedAt ?? Date.now()) : undefined;
+  games.saveGame({ game, view: gameView, draft: roundDraft ?? null, endedAt });
 }
 
-/** Moves a finished game into the history and clears it. */
-function finishGame(finished: Game) {
+/** Moves a finished game into the history, dated when it ended (now if unknown), and clears it. */
+function finishGame(finished: Game, at = Date.now()) {
   games.recordFinished({
     trackLength: finished.trackLength,
     rounds: finished.rounds.length,
     endedByHand: finished.endedByHand,
     players: finished.seats.map((s) => ({ name: s.name, colour: s.colour, score: finished.totals[s.id] ?? 0 })),
-  });
+  }, at);
   games.clearGame();
 }
 
@@ -113,6 +117,7 @@ function showSetup(root: HTMLElement) {
     onBack: () => showHome(root),
     onStart: (started) => {
       game = started;
+      endedAt = undefined;
       roundDraft = undefined;
       showGame(root, 'round');
     },
@@ -150,8 +155,9 @@ function showGame(root: HTMLElement, view: 'round' | 'scores', play: PlayMode = 
         showGame(root, 'scores', 'finale');
       },
       onDone: () => {
-        finishGame(current);
+        finishGame(current, endedAt);
         game = null;
+        endedAt = undefined;
         showHome(root);
       },
       onUndo: () => {

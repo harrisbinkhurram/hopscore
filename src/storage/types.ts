@@ -73,6 +73,8 @@ export interface SavedGame {
   readonly view: 'round' | 'scores';
   /** Votes entered for the next round before Home was tapped. */
   readonly draft: { readonly storyteller: string; readonly votes: Readonly<Record<string, string>> } | null;
+  /** When the game became over, in ms since 1970; missing while it is in progress. Optional, so version 1 data without it still loads. */
+  readonly endedAt?: number;
 }
 
 /** A finished game, as the history shows it. */

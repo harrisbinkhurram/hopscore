@@ -79,6 +79,7 @@ export function createGameStore(backend?: StorageLike | null): GameStore {
         game: { seats, trackLength, storyteller, rounds, endedByHand, redo },
         view: saved.view,
         draft: saved.draft,
+        ...(saved.endedAt !== undefined ? { endedAt: saved.endedAt } : {}),
       };
       game = { ...game, saved: clean };
       if (!game.keepSaved) storage.set(GAME_KEY, JSON.stringify({ version: GAME_VERSION, ...clean }));

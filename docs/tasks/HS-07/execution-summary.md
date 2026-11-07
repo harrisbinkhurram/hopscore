@@ -21,6 +21,14 @@
   the game store's `notSavedReason` is not shown on any screen; the kept leave-page prompt covers
   the blocked-storage case.
 
+- PR review (self-review, not posted; fixed on the branch instead): Undo/Redo/Done ignore the
+  second tap of a double tap; Past games dates a game by when it ended, not when Done was
+  tapped or the app reopened; `restoreGame` rejects rounds after the win. Left open: two tabs on
+  one game can overwrite each other (tab sync out of scope); a kept-safe in-progress game can be
+  recorded twice after Done.
+- While testing, Harris asked for one colour per player (marked with the holder, locked while a
+  free colour is left) and a players/groups list that does not re-sort on rename. Done.
+
 ## Verification
 - `npm run typecheck`, `npm test` (330 tests), `npm run build`: pass locally.
 - Manual, Chrome at 390 px: Confirm, Undo (bunnies hop back, Skip shown), Redo of a round,

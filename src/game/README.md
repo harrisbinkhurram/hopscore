@@ -20,7 +20,7 @@ Pure: no DOM, no storage. Import from `src/game` (the `index.ts`). Every point c
   The Redo list lives on the game (`redo`); a new round or End game clears it.
 - `restoreGame(saved)` rebuilds a game read back from the device, or returns null when it breaks
   a rule (seats, track, storyteller, scores out of seat order, unknown reasons or reasons that do
-  not add up). Totals are always worked out again from the rounds. A broken Redo list costs only
+  not add up, a round after someone reached the finish). Totals are always worked out again from the rounds. A broken Redo list costs only
   the Redo list.
 - `RoundDraft`: the votes entered for the next round, saved with the game.
 

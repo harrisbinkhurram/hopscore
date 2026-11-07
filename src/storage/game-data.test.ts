@@ -109,6 +109,11 @@ describe('loadSavedGame', () => {
     expect(saved?.draft).toEqual({ storyteller: 'b', votes: { a: 'b' } });
   });
 
+  it('reads when the game ended, and drops a bad value', () => {
+    expect(loadSavedGame({ ...clone(V1_GAME), endedAt: 1234 }).saved?.endedAt).toBe(1234);
+    expect(loadSavedGame({ ...clone(V1_GAME), endedAt: 'Friday' }).saved).not.toHaveProperty('endedAt');
+  });
+
   it('goes back to the round screen for an unknown view', () => {
     expect(loadSavedGame(broken((d) => (d.view = 'board'))).saved?.view).toBe('round');
   });

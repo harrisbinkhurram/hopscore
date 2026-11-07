@@ -76,6 +76,7 @@ function readSavedGame(data: Record<string, unknown>): SavedGame | null {
     },
     view: data.view === 'scores' ? 'scores' : 'round',
     draft: readDraft(data.draft, ids),
+    ...(isNumber(data.endedAt) && data.endedAt > 0 ? { endedAt: data.endedAt } : {}),
   };
 }
 

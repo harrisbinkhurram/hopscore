@@ -276,6 +276,16 @@ describe('restoreGame', () => {
     expect(restoreGame(parts(change))).toBeNull();
   });
 
+  it('returns null for a round played after someone reached the finish', () => {
+    let won = newGame(FOUR, 10);
+    while (!gameOver(won)) won = someFind(won);
+    const extra = scorePending(won, won.storyteller, Object.fromEntries(
+      won.seats.filter((s) => s.id !== won.storyteller).map((s) => [s.id, won.storyteller])));
+    const base = { seats: won.seats, trackLength: 10, storyteller: won.storyteller, endedByHand: false };
+    expect(restoreGame({ ...base, rounds: won.rounds })).not.toBeNull();
+    expect(restoreGame({ ...base, rounds: [...won.rounds, extra] })).toBeNull();
+  });
+
   it('drops only the Redo list when a step in it is broken', () => {
     const game = restoreGame(parts({ redo: [{ kind: 'round', round: { ...round, storyteller: 'z' } }] }));
     expect(game?.rounds).toEqual(played.rounds);
