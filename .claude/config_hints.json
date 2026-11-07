@@ -1,0 +1,22 @@
+{
+  "_comment": "Project configuration for Agentic Repos. Safe to commit to git.",
+  "project": {
+    "namespace": "HS",
+    "name": "Hopscore",
+    "tracker": {
+      "type": "none",
+      "url": ""
+    }
+  },
+  "framework_version": "1.3.1",
+  "platform": "Static web app - Vite + TypeScript + Three.js, deployed to GitHub Pages",
+  "standards_location": "docs/ai-rules",
+  "stack": "node",
+  "test_command": "npm test",
+  "lint_command": "npm run typecheck",
+  "build_command": "npm run build",
+  "verify": {
+    "full_command": "npm test && npm run build"
+  },
+  "post_worktree_command": ""
+}
