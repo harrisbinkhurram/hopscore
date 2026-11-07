@@ -4,6 +4,7 @@ import { gameOver, type Game } from './game';
 import { button, h } from './screens/dom';
 import { showPlayersScreen } from './screens/players/players-screen';
 import { showRoundScreen, type RoundDraft } from './screens/round/round-screen';
+import type { PlayMode } from './screens/scores/board-input';
 import { showScoresScreen } from './screens/scores/scores-screen';
 import { showSetupScreen } from './screens/setup/setup-screen';
 import { createPlayerStore } from './storage/player-store';
@@ -72,7 +73,8 @@ function showSetup(root: HTMLElement) {
   }));
 }
 
-function showGame(root: HTMLElement, view: 'round' | 'scores') {
+/** `play` says what the board plays when the scores open: only straight after Confirm or End game. */
+function showGame(root: HTMLElement, view: 'round' | 'scores', play: PlayMode = 'none') {
   const current = game;
   if (!current) return showHome(root);
   gameView = view;
@@ -87,16 +89,17 @@ function showGame(root: HTMLElement, view: 'round' | 'scores') {
       onConfirm: (next) => {
         game = next;
         roundDraft = undefined;
-        showGame(root, 'scores');
+        showGame(root, 'scores', 'round');
       },
     }));
   } else {
     open(() => showScoresScreen(root, current, {
+      play,
       onHome,
       onNextRound: () => showGame(root, 'round'),
       onEnd: (ended) => {
         game = ended;
-        showGame(root, 'scores');
+        showGame(root, 'scores', 'finale');
       },
       onDone: () => {
         game = null;
