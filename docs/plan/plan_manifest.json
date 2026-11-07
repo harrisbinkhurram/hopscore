@@ -9,7 +9,7 @@
   "story_branch": null,
   "spec_path": "spec.md",
   "docs_store_base": null,
-  "prompt_count": 8,
+  "prompt_count": 9,
   "prompts": [
     {
       "sequence": 1,
@@ -102,6 +102,19 @@
       "depends_on": [
         6,
         7
+      ],
+      "status": "planned",
+      "task_flow_folder": null,
+      "branch": null,
+      "pr": null
+    },
+    {
+      "sequence": 9,
+      "file": "09_seven_and_eight_players.md",
+      "title": "Seven and eight players",
+      "depends_on": [
+        4,
+        5
       ],
       "status": "planned",
       "task_flow_folder": null,

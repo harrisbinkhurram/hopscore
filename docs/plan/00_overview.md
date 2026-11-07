@@ -19,6 +19,7 @@ players and groups, and shows the scores as low-poly bunnies hopping along a gar
 | 06 | [Animations](raw_prompts/06_animations.md) | Hops, celebrations, skip, reduced motion | 04, 05 |
 | 07 | [Undo, resume, history](raw_prompts/07_undo_resume_history.md) | Undo, autosave, finished-game history | 04 |
 | 08 | [PWA and polish](raw_prompts/08_pwa_and_polish.md) | Offline, install, footer disclaimer, perf pass | 06, 07 |
+| 09 | [Seven and eight players](raw_prompts/09_seven_and_eight_players.md) | Games and groups of up to 8, 7-8 player rules, board fits 8 | 04, 05 |
 
 ## Dependency graph
 
@@ -34,6 +35,8 @@ flowchart LR
     T04 --> T07[07 Undo/resume]
     T06 --> T08[08 PWA + polish]
     T07 --> T08
+    T04 --> T09[09 Up to 8 players]
+    T05 --> T09
 ```
 
 ## Parallel work
@@ -45,3 +48,4 @@ flowchart LR
 ## Open questions
 
 1. The exact 3-player rules, from a rulebook (affects task 02 only, kept in one place).
+2. Whether 7 and 8 players use different rules, from a rulebook (task 09).
