@@ -93,7 +93,7 @@
       "status": "in_progress",
       "task_flow_folder": "docs/tasks/HS-07",
       "branch": "feature/hs-07-undo-resume-history",
-      "pr": null
+      "pr": 8
     },
     {
       "sequence": 8,
