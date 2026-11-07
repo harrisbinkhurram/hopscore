@@ -1,3 +1,5 @@
+// The shared helpers load common.css first, so this screen's CSS can override it.
+import { button, errorLine, h, swatch } from '../dom';
 import './players.css';
 import { BUNNY_COLOURS, bunnyColour } from '../../storage/colours';
 import type { PlayerStore, Result } from '../../storage/player-store';
@@ -282,34 +284,4 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
 
   render();
   return store.subscribe(render);
-}
-
-function swatch(colourId: string) {
-  const s = h('span', { className: 'ps-swatch' });
-  s.style.background = bunnyColour(colourId).hex;
-  s.setAttribute('aria-hidden', 'true');
-  return s;
-}
-
-function errorLine(text: string) {
-  return h('p', { className: 'ps-error', role: 'alert', textContent: text });
-}
-
-function button(text: string, className: string, onClick: () => void) {
-  const b = h('button', { type: 'button', className, textContent: text });
-  b.addEventListener('click', onClick);
-  return b;
-}
-
-function h<K extends keyof HTMLElementTagNameMap>(
-  tag: K,
-  props: Partial<HTMLElementTagNameMap[K]> & { role?: string } = {},
-  ...children: Node[]
-): HTMLElementTagNameMap[K] {
-  const el = document.createElement(tag);
-  const { role, ...rest } = props;
-  Object.assign(el, rest);
-  if (role) el.setAttribute('role', role);
-  el.append(...children);
-  return el;
 }

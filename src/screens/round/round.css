@@ -1,0 +1,111 @@
+/* Round entry and review. Shared buttons, chips and the screen column are in ../common.css. */
+
+.rd-teller {
+  min-height: 3.5rem;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 2px solid var(--accent);
+  border-radius: 0.875rem;
+  background: var(--surface);
+}
+
+.rd-teller-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 1.25rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.rd-teller-name .screen-hint {
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.rd-vote {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+.round-screen h2.rd-voter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
+  overflow-wrap: anywhere;
+}
+
+.chip.is-teller {
+  border-style: dashed;
+}
+
+.chip[aria-pressed='true'].is-teller {
+  border-style: solid;
+}
+
+.rd-tag {
+  font-size: 0.75rem;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.rd-main {
+  min-height: 3.5rem;
+  font-size: 1.125rem;
+}
+
+.rd-center {
+  text-align: center;
+}
+
+.rd-review,
+.rd-reasons {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rd-review {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rd-review-row {
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border: 2px solid var(--line);
+  border-radius: 0.875rem;
+  background: var(--surface);
+}
+
+.rd-review-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rd-review-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.rd-points {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.rd-reasons {
+  color: var(--muted);
+  font-size: 0.95rem;
+}

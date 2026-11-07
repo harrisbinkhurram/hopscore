@@ -1,0 +1,182 @@
+/* Shared by every screen: colours, screen root, buttons. Phone first: tap targets at least 48px. */
+
+:root {
+  --surface: #ffffff;
+  --line: #e6dccd;
+  --danger: #c2334f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #29243a;
+    --line: #3d3650;
+    --danger: #ff7d95;
+  }
+}
+
+#app.screen-root {
+  justify-content: flex-start;
+  align-items: stretch;
+  text-align: left;
+}
+
+.btn {
+  min-height: 3rem;
+  min-width: 3rem;
+  padding: 0 1.125rem;
+  border: 2px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.btn-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn-primary {
+    color: #142018;
+  }
+}
+
+.btn-ghost {
+  background: transparent;
+}
+
+.btn-wide {
+  width: 100%;
+}
+
+.btn-danger {
+  align-self: flex-start;
+  border-color: var(--danger);
+  background: transparent;
+  color: var(--danger);
+}
+
+.btn-danger.is-armed {
+  background: var(--danger);
+  color: #fff;
+}
+
+.swatch {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 2px solid rgb(0 0 0 / 0.15);
+}
+
+.error-line {
+  margin: 0;
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* Home screen buttons. */
+.home-link {
+  margin-top: 1.5rem;
+  min-width: 14rem;
+}
+
+.home-link + .home-link {
+  margin-top: 0.25rem;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* The column every game screen sits in. */
+.screen {
+  width: 100%;
+  max-width: 32rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.screen-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.screen-header h1,
+.screen h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.screen-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.screen-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* A row of big name buttons; the pressed one is filled. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  min-height: 3rem;
+  padding: 0 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 2px solid var(--line);
+  border-radius: 1.5rem;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .chip[aria-pressed='true'] {
+    color: #142018;
+  }
+}
+
+.chip:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.chip .swatch {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+/* Keeps a green or white bunny's dot visible on a filled chip. */
+.chip[aria-pressed='true'] .swatch {
+  border-color: #fff;
+}

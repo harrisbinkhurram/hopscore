@@ -1,0 +1,85 @@
+/* Score list and winner view. Shared buttons and the screen column are in ../common.css. */
+
+.sc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sc-row {
+  min-height: 3.5rem;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 2px solid var(--line);
+  border-radius: 0.875rem;
+  background: var(--surface);
+}
+
+.sc-row.is-winner {
+  border-color: var(--accent);
+}
+
+.sc-rank {
+  flex: none;
+  min-width: 1.25rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.sc-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.sc-gained {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.sc-total {
+  min-width: 2.5rem;
+  text-align: right;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.sc-next {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.sc-main {
+  min-height: 3.5rem;
+  font-size: 1.125rem;
+}
+
+.scores-screen .btn-danger {
+  align-self: stretch;
+}
+
+.sc-center {
+  text-align: center;
+}
+
+.sc-trophy {
+  margin: 1rem 0 0;
+  font-size: 3.5rem;
+  text-align: center;
+}
+
+.scores-screen h1.sc-winner {
+  font-size: clamp(1.75rem, 8vw, 2.5rem);
+  color: var(--accent);
+  text-align: center;
+  overflow-wrap: anywhere;
+}

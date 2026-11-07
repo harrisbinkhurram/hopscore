@@ -37,7 +37,7 @@ remembers players and groups, so starting a game takes one tap.
   description, never as the app's name (see the naming rule at the top).
 - Accounts, servers, or syncing between devices. Everything stays on the device.
 - Support / donation links. Planned for later, see **Later** below.
-- 7 or more players.
+- 9 or more players.
 
 ## Who uses it, and how
 
@@ -74,7 +74,8 @@ flowchart TD
 
 ### 2. Game setup
 
-- Choose 3 to 6 players from saved players, or add a new one inline.
+- Choose 3 to 6 players from saved players, or add a new one inline. Task 09 raises this to 8,
+  since the current edition of the card game is for 3 to 8 players.
 - Set the seat order by dragging. The storyteller rotates in this order.
 - Choose the track length (default 30).
 - For 3 players, the 3-player rules are switched on automatically (see Scoring).
@@ -170,7 +171,6 @@ The scoring engine is pure logic with no UI, and is fully covered by table-drive
 
 - Support link in the footer (provider still to be decided; the footer will read from a small
   config list, and an empty slot is hidden).
-- 7 or more players.
 - Sound effects.
 - Share a picture of the final board.
 - A custom domain (check that a "hopscore" domain is free).
@@ -178,6 +178,7 @@ The scoring engine is pure logic with no UI, and is fully covered by table-drive
 ## Open questions
 
 1. The exact 3-player rules, from a rulebook.
+2. Whether 7 and 8 players use different rules, from a rulebook (task 09).
 
 ## Implementation checklist (high level)
 
@@ -189,3 +190,4 @@ The scoring engine is pure logic with no UI, and is fully covered by table-drive
 6. Hop animations and celebrations.
 7. Undo, resume, history.
 8. PWA, offline, polish, performance pass.
+9. Games and groups of up to 8 players.

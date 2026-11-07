@@ -18,7 +18,7 @@ Taken from the code on `main`. No linter or formatter runs, so match the nearest
 - Named exports only. No default exports in `src/`.
 - Constants are UPPER_SNAKE (`PLAYERS_KEY`, `CURRENT_VERSION`, `LIMITS`, `BUNNY_COLOURS`).
 - Kinds and states are string-literal unions (`'storage-off' | 'kept-safe' | null`), not enums.
-- Screens are `show<Name>Screen(root, store, options)` and return an unsubscribe function.
+- Screens are `show<Name>Screen(root, store or game, options)` and return an unsubscribe function (a no-op when the screen reads no store).
 
 ## Imports
 
@@ -39,8 +39,8 @@ import type { PlayerStore, Result } from '../../storage/player-store';
 
 ## Screens (no framework)
 
-- Plain DOM. Build elements with the file-local `h()` helper and re-render the whole screen after each change (`src/screens/players/players-screen.ts`).
-- One CSS file per screen, imported by the screen (`import './players.css'`). Screen classes use a short prefix (`.ps-` for the players screen); shared colours come from the variables in `src/style.css`.
+- Plain DOM. Build elements with `h()` and the other helpers in `src/screens/dom.ts`, and re-render the whole screen after each change (`src/screens/players/players-screen.ts`). Keep the scroll position across a re-render; the whole-screen swap otherwise jumps to the top.
+- One CSS file per screen, imported by the screen after `../dom` (which loads `common.css`), so the screen's rules win. Screen classes use a short prefix (`.ps-` players, `.su-` setup, `.rd-` round, `.sc-` scores); buttons, chips and the `--surface`, `--line`, `--danger` colours live in `src/screens/common.css`, the page colours in `src/style.css`.
 - Phone first: portrait, one column, tap targets 48 px or more, no sideways scroll at 320 px.
 - No `alert`/`confirm`/`prompt`. Confirm destructive actions in the page (delete needs two taps).
 

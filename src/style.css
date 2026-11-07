@@ -58,7 +58,8 @@ body {
   font-weight: 600;
 }
 
-.note {
-  margin: 1rem 0 0;
-  color: var(--muted);
+/* While a game is in progress, a pull-down must not reload the page and lose it (main.ts). */
+html.in-game,
+html.in-game body {
+  overscroll-behavior-y: contain;
 }

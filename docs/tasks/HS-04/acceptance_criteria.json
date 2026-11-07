@@ -1,0 +1,61 @@
+{
+  "task": "HS-04",
+  "branch": "feature/hs-04-setup-and-round-entry",
+  "locked_at": "2026-11-07",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "A game starts only with 3 to 6 distinct players and a track length from 10 to 60; seat 1 tells the first story",
+      "verification": "game.test.ts setupProblems/newGame cases",
+      "passes": true
+    },
+    {
+      "id": "AC-2",
+      "description": "Each round's points come from the scoring engine, and totals add up across rounds",
+      "verification": "game.test.ts applyRound: two rounds, totals equal the sum of scoreRound results; 3 players use THREE_PLAYER_RULES",
+      "passes": true
+    },
+    {
+      "id": "AC-3",
+      "description": "The storyteller rotates in seat order and wraps; after a changed storyteller, rotation follows on from them",
+      "verification": "game.test.ts applyRound rotation cases",
+      "passes": true
+    },
+    {
+      "id": "AC-4",
+      "description": "A voter is never offered their own card; the storyteller's card is offered",
+      "verification": "game.test.ts voteChoices; manual: round entry shows no chip with the voter's own name",
+      "passes": true
+    },
+    {
+      "id": "AC-5",
+      "description": "The game is over when a total reaches the track length or after End game; tied leaders share the win",
+      "verification": "game.test.ts gameOver and standings cases",
+      "passes": true
+    },
+    {
+      "id": "AC-6",
+      "description": "The setup screen starts a game from a group in one tap or from tapped players, adds a player inline, reorders seats by drag and by up/down, sets track length, notes the 3-player rules, and marks the players as recently used",
+      "verification": "manual in Chrome at 390 px: each step done; Players screen lists the game's players first afterwards",
+      "passes": true
+    },
+    {
+      "id": "AC-7",
+      "description": "Round entry, review with reasons, score list and winner screen work one-handed in portrait, and Resume returns to a game left for the home screen",
+      "verification": "manual in Chrome at 390 px and 320 px, light and dark: full game to the winner screen by track length and by End game; Home then Resume; no sideways scroll; tap targets at least 48 px",
+      "passes": true
+    },
+    {
+      "id": "AC-8",
+      "description": "The plan manifest shows prompts 2, 3 and 5 completed and prompt 4 in progress with its branch, folder and PR",
+      "verification": "jq '.prompts[] | {sequence,status,branch,pr}' docs/plan/plan_manifest.json",
+      "passes": true
+    },
+    {
+      "id": "AC-9",
+      "description": "Typecheck, tests and build pass locally and in CI on the PR",
+      "verification": "npm run typecheck && npm test && npm run build locally; gh pr checks green",
+      "passes": true
+    }
+  ]
+}
