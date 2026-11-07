@@ -57,8 +57,3 @@ body {
   font-size: clamp(1.125rem, 5vw, 1.5rem);
   font-weight: 600;
 }
-
-.note {
-  margin: 1rem 0 0;
-  color: var(--muted);
-}

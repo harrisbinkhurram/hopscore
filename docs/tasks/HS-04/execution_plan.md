@@ -210,3 +210,7 @@ See [acceptance_criteria.json](acceptance_criteria.json).
   pointer capture, so the drag stuck after one row. Fixed: neighbours move around the dragged row,
   and losing the capture ends the drag. Also fixed: each re-render jumped the page to the top
   (setup, round votes, arming End game); the scroll position is now kept.
+- 2026-11-07: Code review (Claude's reviewer agent): approved, no blockers or warnings. Two nits
+  fixed: Home in the middle of a round now keeps the storyteller and the votes entered, and Resume
+  brings them back (before, the round started empty again); the unused `.note` style is removed.
+  The draft fix was checked by typecheck, tests and build, not by hand.

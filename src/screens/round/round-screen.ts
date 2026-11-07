@@ -3,10 +3,19 @@ import './round.css';
 import { applyRound, scorePending, voteChoices, type Game, type SeatedPlayer } from '../../game';
 import type { PlayerId } from '../../scoring';
 
+/** A round entered but not confirmed yet, kept so Home then Resume does not lose it. */
+export interface RoundDraft {
+  readonly storyteller: PlayerId;
+  readonly votes: Readonly<Record<PlayerId, PlayerId>>;
+}
+
 export interface RoundScreenOptions {
+  /** Where to start; defaults to the game's storyteller and no votes. */
+  draft?: RoundDraft;
   /** The round was confirmed: `game` has it added. */
   onConfirm: (game: Game) => void;
-  onHome: () => void;
+  /** Home was tapped: `draft` is what had been entered. */
+  onHome: (draft: RoundDraft) => void;
 }
 
 /**
@@ -14,8 +23,8 @@ export interface RoundScreenOptions {
  * Returns a no-op unsubscribe, like the other screens: this one reads no store.
  */
 export function showRoundScreen(root: HTMLElement, game: Game, options: RoundScreenOptions) {
-  let storyteller: PlayerId = game.storyteller;
-  let votes: Record<PlayerId, PlayerId> = {};
+  let storyteller: PlayerId = options.draft?.storyteller ?? game.storyteller;
+  let votes: Record<PlayerId, PlayerId> = { ...options.draft?.votes };
   let step: 'entry' | 'review' = 'entry';
   let changingTeller = false;
   /** The step on screen now, so a step change can scroll to the top. */
@@ -36,7 +45,7 @@ export function showRoundScreen(root: HTMLElement, game: Game, options: RoundScr
   function render() {
     root.classList.add('screen-root');
     const screen = h('div', { className: 'screen round-screen' },
-      h('header', { className: 'screen-header' }, button('Home', 'btn btn-ghost', options.onHome),
+      h('header', { className: 'screen-header' }, button('Home', 'btn btn-ghost', () => options.onHome({ storyteller, votes })),
         h('h1', { textContent: step === 'entry' ? `Round ${roundNumber}` : `Round ${roundNumber}: points` })));
     if (step === 'entry') screen.append(tellerSection(), ...voteSections(), reviewButton());
     else screen.append(...reviewSections());

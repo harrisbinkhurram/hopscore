@@ -3,7 +3,7 @@ import { APP_NAME, APP_TAGLINE } from './app/branding';
 import { gameOver, type Game } from './game';
 import { button, h } from './screens/dom';
 import { showPlayersScreen } from './screens/players/players-screen';
-import { showRoundScreen } from './screens/round/round-screen';
+import { showRoundScreen, type RoundDraft } from './screens/round/round-screen';
 import { showScoresScreen } from './screens/scores/scores-screen';
 import { showSetupScreen } from './screens/setup/setup-screen';
 import { createPlayerStore } from './storage/player-store';
@@ -16,6 +16,8 @@ let leaveScreen: (() => void) | null = null;
 let game: Game | null = null;
 /** Where Resume goes back to. */
 let gameView: 'round' | 'scores' = 'round';
+/** Votes entered before Home was tapped mid-round. */
+let roundDraft: RoundDraft | undefined;
 
 function open(show: () => () => void) {
   leaveScreen?.();
@@ -45,6 +47,7 @@ function showSetup(root: HTMLElement) {
     onBack: () => showHome(root),
     onStart: (started) => {
       game = started;
+      roundDraft = undefined;
       showGame(root, 'round');
     },
   }));
@@ -57,9 +60,14 @@ function showGame(root: HTMLElement, view: 'round' | 'scores') {
   const onHome = () => showHome(root);
   if (view === 'round') {
     open(() => showRoundScreen(root, current, {
-      onHome,
+      draft: roundDraft,
+      onHome: (draft) => {
+        roundDraft = draft;
+        onHome();
+      },
       onConfirm: (next) => {
         game = next;
+        roundDraft = undefined;
         showGame(root, 'scores');
       },
     }));

@@ -49,7 +49,7 @@
       "id": "AC-8",
       "description": "The plan manifest shows prompts 2, 3 and 5 completed and prompt 4 in progress with its branch, folder and PR",
       "verification": "jq '.prompts[] | {sequence,status,branch,pr}' docs/plan/plan_manifest.json",
-      "passes": false
+      "passes": true
     },
     {
       "id": "AC-9",

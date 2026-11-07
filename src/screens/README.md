@@ -19,6 +19,7 @@ after every change.
 
 home → setup → round → scores → round → … → winner → home.
 
-Home shows Resume while a game is in progress; it goes back to the round or the score list. The
+Home shows Resume while a game is in progress; it goes back to the round (with any votes already
+entered) or the score list. The
 game is kept for this page visit only; saving it is task 07. Task 06 puts the board in place of the
 score list.

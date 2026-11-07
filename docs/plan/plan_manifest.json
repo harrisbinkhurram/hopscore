@@ -56,7 +56,7 @@
       "status": "in_progress",
       "task_flow_folder": "docs/tasks/HS-04",
       "branch": "feature/hs-04-setup-and-round-entry",
-      "pr": null
+      "pr": 6
     },
     {
       "sequence": 5,
