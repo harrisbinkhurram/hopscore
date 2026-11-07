@@ -1,0 +1,76 @@
+/* Past games. Phone first: one column, tap targets at least 48px. */
+
+.hs-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.hs-entry {
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 2px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--surface);
+}
+
+.hs-date {
+  margin: 0;
+  font-weight: 800;
+}
+
+.hs-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.hs-players {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.25rem 0.75rem;
+}
+
+.hs-player {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.hs-player .swatch {
+  width: 1rem;
+  height: 1rem;
+}
+
+.hs-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hs-player.is-winner .hs-name {
+  font-weight: 800;
+}
+
+.hs-crown {
+  flex: none;
+  font-size: 0.875rem;
+}
+
+.hs-score {
+  flex: none;
+  min-width: 1.5rem;
+  text-align: right;
+  font-weight: 800;
+}

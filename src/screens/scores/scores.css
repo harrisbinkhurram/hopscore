@@ -123,3 +123,19 @@
   text-align: center;
   overflow-wrap: anywhere;
 }
+
+/* Undo and Redo side by side; one alone fills the row. */
+.sc-undo {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.sc-undo:empty {
+  display: none;
+}
+
+.sc-undo .btn {
+  flex: 1 1 0;
+  min-width: 0;
+}

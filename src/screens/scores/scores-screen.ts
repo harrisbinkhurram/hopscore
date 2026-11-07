@@ -1,11 +1,14 @@
 import { button, h, SECOND_TAP_DELAY_MS, swatch } from '../dom';
 import './scores.css';
 import type { Board } from '../../board/board';
-import { endGame, gameOver, standings, type Game } from '../../game';
-import { boardPlayers, finalePlay, roundPlay, type PlayMode } from './board-input';
+import { canUndo, endGame, gameOver, nextRedo, standings, type Game } from '../../game';
+import { boardPlayers, finalePlay, roundPlay, undoPlay, type PlayMode } from './board-input';
 
 export interface ScoresScreenOptions {
-  /** `round` plays the last round on the board, `finale` only the winner's dance, `none` shows the scores. */
+  /**
+   * `round` plays the last round on the board, `finale` only the winner's dance, `undoneFrom`
+   * hops the bunnies back after an Undo, `none` shows the scores.
+   */
   play: PlayMode;
   onNextRound: () => void;
   /** End game was tapped twice: `game` is now over. */
@@ -13,6 +16,10 @@ export interface ScoresScreenOptions {
   onHome: () => void;
   /** Winner view only: leave the finished game. */
   onDone: () => void;
+  /** Undo was tapped: take back the last round, or End game. */
+  onUndo: () => void;
+  /** Redo was tapped: put back the step undone last. */
+  onRedo: () => void;
 }
 
 /**
@@ -39,7 +46,8 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
   startBoard();
 
   function startBoard() {
-    const rp = options.play === 'round' ? roundPlay(game) : null;
+    const { play } = options;
+    const rp = play === 'round' ? roundPlay(game) : typeof play === 'object' ? undoPlay(play.undoneFrom, game) : null;
     import('../../board/board')
       .then(({ createBoard }) => {
         if (left) return;
@@ -51,7 +59,7 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
           },
         });
         if (rp) void board.play(rp.round);
-        else if (options.play === 'finale') void board.play(finalePlay(game));
+        else if (play === 'finale') void board.play(finalePlay(game));
       })
       .catch(() => {
         // No WebGL, or the board failed to load: the readout still has every score.
@@ -93,11 +101,13 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
 
     if (over) {
       screen.append(button('Done', 'btn btn-primary btn-wide sc-main', options.onDone));
+      screen.append(undoRow());
     } else {
       const next = game.seats.find((s) => s.id === game.storyteller)!;
       screen.append(
         h('p', { className: 'sc-next', textContent: `Next storyteller: ${next.name}` }),
         button(game.rounds.length === 0 ? 'Score the first round' : 'Score next round', 'btn btn-primary btn-wide sc-main', options.onNextRound),
+        undoRow(),
         endButton(),
       );
     }
@@ -108,7 +118,22 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
     firstRender = false;
   }
 
-  /** End game needs two deliberate taps: there is no undo yet. */
+  /** Undo and Redo, one tap each; empty when there is nothing to undo or redo. */
+  function undoRow() {
+    const row = h('div', { className: 'sc-undo' });
+    if (canUndo(game)) {
+      const label = game.endedByHand ? 'Undo End game' : `Undo round ${game.rounds.length}`;
+      row.append(button(label, 'btn', options.onUndo));
+    }
+    const redo = nextRedo(game);
+    if (redo) {
+      const label = redo.kind === 'end' ? 'Redo End game' : `Redo round ${game.rounds.length + 1}`;
+      row.append(button(label, 'btn', options.onRedo));
+    }
+    return row;
+  }
+
+  /** End game needs two deliberate taps, so a stray tap does not end the game. */
   function endButton() {
     const b = button(confirmEnd ? 'Tap again to end the game' : 'End game', `btn btn-danger btn-wide${confirmEnd ? ' is-armed' : ''}`, () => {
       if (confirmEnd) {

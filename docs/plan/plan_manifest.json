@@ -78,7 +78,7 @@
         4,
         5
       ],
-      "status": "in_progress",
+      "status": "completed",
       "task_flow_folder": "docs/tasks/HS-06",
       "branch": "feature/hs-06-hops-and-celebrations",
       "pr": 7
@@ -90,9 +90,9 @@
       "depends_on": [
         4
       ],
-      "status": "planned",
-      "task_flow_folder": null,
-      "branch": null,
+      "status": "in_progress",
+      "task_flow_folder": "docs/tasks/HS-07",
+      "branch": "feature/hs-07-undo-resume-history",
       "pr": null
     },
     {

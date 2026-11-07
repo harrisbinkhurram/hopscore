@@ -19,6 +19,31 @@ function round(before: number[], gains: number[], storyteller = 'p0', winners: s
 }
 
 describe('planRound', () => {
+  it('hops back stone by stone on negative gains (Undo), longest hop back first, no celebrations', () => {
+    const beats = planRound(players([9, 4, 6]), round([9, 4, 6], [-6, -1, -2], ''), LENGTH);
+    expect(beats).toEqual([
+      { kind: 'hop', id: 'p0', stones: [8, 7, 6, 5, 4, 3], big: false },
+      { kind: 'hop', id: 'p2', stones: [5, 4], big: false },
+      { kind: 'hop', id: 'p1', stones: [3], big: false },
+    ]);
+  });
+
+  it('hops back from the finish only from the last stone', () => {
+    const beats = planRound(players([LENGTH + 4, 0, 0]), round([LENGTH + 4, 0, 0], [-6, 0, 0], ''), LENGTH);
+    expect(beats).toEqual([{ kind: 'hop', id: 'p0', stones: [LENGTH - 1, LENGTH - 2], big: false }]);
+  });
+
+  it('gives no beat to a hop back that stays past the finish', () => {
+    expect(planRound(players([LENGTH + 5, 0, 0]), round([LENGTH + 5, 0, 0], [-3, 0, 0], ''), LENGTH)).toEqual([]);
+  });
+
+  it('ends every bunny on its new stone after a hop back', () => {
+    const before = players([12, 7, 3]);
+    const r = round([12, 7, 3], [-5, -7, 0], '');
+    const stones = foldStones(new Map(before.map((p) => [p.id, stoneForScore(p.score, LENGTH)])), planRound(before, r, LENGTH));
+    expect([...stones.values()]).toEqual(r.players.map((p) => stoneForScore(p.score, LENGTH)));
+  });
+
   it('plays the smallest gain first, ties in seat order', () => {
     const beats = planRound(players([0, 0, 0, 0]), round([0, 0, 0, 0], [3, 1, 3, 2]), LENGTH);
     expect(beats.map((b) => (b.kind === 'hop' ? b.id : b.kind))).toEqual(['p1', 'p3', 'p0', 'p2']);

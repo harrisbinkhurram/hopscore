@@ -1,24 +1,65 @@
 import './style.css';
 import { APP_NAME, APP_TAGLINE } from './app/branding';
-import { gameOver, type Game } from './game';
+import { gameOver, nextRedo, redoNext, restoreGame, undoLast, type Game, type RoundDraft } from './game';
 import { button, h } from './screens/dom';
+import { showHistoryScreen } from './screens/history/history-screen';
 import { showPlayersScreen } from './screens/players/players-screen';
-import { showRoundScreen, type RoundDraft } from './screens/round/round-screen';
+import { showRoundScreen } from './screens/round/round-screen';
 import type { PlayMode } from './screens/scores/board-input';
 import { showScoresScreen } from './screens/scores/scores-screen';
 import { showSetupScreen } from './screens/setup/setup-screen';
+import { createGameStore } from './storage/game-store';
 import { createPlayerStore } from './storage/player-store';
 
 const app = document.querySelector<HTMLElement>('#app');
 const store = createPlayerStore();
+const games = createGameStore();
 let leaveScreen: (() => void) | null = null;
 
-/** The game in progress, kept for this page visit only (saving it is task 07). */
+/** The game in progress. Saved after every step, so it survives closing the app. */
 let game: Game | null = null;
 /** Where Resume goes back to. */
 let gameView: 'round' | 'scores' = 'round';
 /** Votes entered before Home was tapped mid-round. */
 let roundDraft: RoundDraft | undefined;
+
+loadSavedGame();
+
+/**
+ * Picks up the game saved last time. A game that breaks a rule is dropped (the players are
+ * kept on their own key); one that was already over goes into the history, unless it is kept
+ * safe for a newer app: it cannot be cleared, so it would be recorded again on every visit.
+ */
+function loadSavedGame() {
+  const saved = games.savedGame();
+  if (!saved) return;
+  const restored = restoreGame(saved.game);
+  if (!restored) {
+    games.clearGame();
+  } else if (gameOver(restored)) {
+    if (!games.gameKeptSafe) finishGame(restored);
+  } else {
+    game = restored;
+    gameView = saved.view;
+    roundDraft = saved.draft ?? undefined;
+  }
+}
+
+function saveGame() {
+  if (game) games.saveGame({ game, view: gameView, draft: roundDraft ?? null });
+  else games.clearGame();
+}
+
+/** Moves a finished game into the history and clears it. */
+function finishGame(finished: Game) {
+  games.recordFinished({
+    trackLength: finished.trackLength,
+    rounds: finished.rounds.length,
+    endedByHand: finished.endedByHand,
+    players: finished.seats.map((s) => ({ name: s.name, colour: s.colour, score: finished.totals[s.id] ?? 0 })),
+  });
+  games.clearGame();
+}
 
 function open(show: () => () => void) {
   leaveScreen?.();
@@ -31,8 +72,9 @@ function inProgress(): boolean {
 }
 
 /**
- * Until task 07 saves the game, a reload or leaving the page loses it. While a game is in
- * progress: no pull-to-refresh (html.in-game in style.css), and the browser asks before leaving.
+ * While a game is in progress: no pull-to-refresh (html.in-game in style.css), and the browser
+ * asks before leaving. The game is saved, but the prompt is kept on purpose (HS-07): votes
+ * being entered are not saved until Home, and storage can be blocked or full.
  */
 function guardGame() {
   document.documentElement.classList.toggle('in-game', inProgress());
@@ -56,6 +98,10 @@ function showHome(root: HTMLElement) {
   if (inProgress()) {
     parts.push(button('Resume game', 'btn home-link', () => showGame(root, gameView)));
   }
+  if (games.history().length > 0) {
+    parts.push(button('Past games', 'btn btn-ghost home-link', () =>
+      open(() => showHistoryScreen(root, games, { onBack: () => showHome(root) }))));
+  }
   parts.push(button('Players & groups', 'btn btn-ghost home-link', () =>
     open(() => showPlayersScreen(root, store, { onBack: () => showHome(root) }))));
   root.replaceChildren(...parts);
@@ -78,12 +124,14 @@ function showGame(root: HTMLElement, view: 'round' | 'scores', play: PlayMode = 
   const current = game;
   if (!current) return showHome(root);
   gameView = view;
+  saveGame();
   const onHome = () => showHome(root);
   if (view === 'round') {
     open(() => showRoundScreen(root, current, {
       draft: roundDraft,
       onHome: (draft) => {
         roundDraft = draft;
+        saveGame();
         onHome();
       },
       onConfirm: (next) => {
@@ -102,8 +150,20 @@ function showGame(root: HTMLElement, view: 'round' | 'scores', play: PlayMode = 
         showGame(root, 'scores', 'finale');
       },
       onDone: () => {
+        finishGame(current);
         game = null;
         showHome(root);
+      },
+      onUndo: () => {
+        game = undoLast(current);
+        roundDraft = undefined;
+        showGame(root, 'scores', { undoneFrom: current });
+      },
+      onRedo: () => {
+        const step = nextRedo(current);
+        game = redoNext(current);
+        roundDraft = undefined;
+        showGame(root, 'scores', step?.kind === 'end' ? 'finale' : 'round');
       },
     }));
   }

@@ -1,0 +1,61 @@
+{
+  "task": "HS-07",
+  "branch": "feature/hs-07-undo-resume-history",
+  "locked_at": "2026-11-07",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "Undo takes off the last round: the totals go back and the next storyteller is whoever told the undone round",
+      "verification": "game.test.ts undoLast cases (totals, storyteller, storyteller changed on the round screen)",
+      "passes": true
+    },
+    {
+      "id": "AC-2",
+      "description": "Undo can be used again and again, down to a game with no rounds",
+      "verification": "game.test.ts: undo twice and undo back to round 0; manual: undo three rounds in a row",
+      "passes": true
+    },
+    {
+      "id": "AC-3",
+      "description": "Undo on the winner view reopens the game: a win at the finish loses the winning round, End game is simply taken back",
+      "verification": "game.test.ts undo after End game and after a win at the finish; manual: both winner views show the right Undo label and reopen the game",
+      "passes": true
+    },
+    {
+      "id": "AC-4",
+      "description": "After Undo the bunnies hop back one stone at a time; Skip (tap or button) and reduced motion still work",
+      "verification": "choreography.test.ts negative gains; board-input.test.ts undoPlay; manual: undo in Chrome, then with Skip, then with reduced motion",
+      "passes": false
+    },
+    {
+      "id": "AC-5",
+      "description": "The game is saved after every round; reopening the app offers Resume and lands on the same screen with the same entered votes, without replaying hops",
+      "verification": "game-store.test.ts save then a new store reads it back with view and draft; manual: reload mid-round and on the scores screen",
+      "passes": true
+    },
+    {
+      "id": "AC-6",
+      "description": "Finished games appear in a history (date, players, final scores) reachable from Home, at most 10, each deletable with two taps",
+      "verification": "game-store.test.ts recordFinished, cap of 10, deleteHistory; manual: Past games screen and two-tap delete at 390 px and 320 px",
+      "passes": false
+    },
+    {
+      "id": "AC-7",
+      "description": "Broken or old saved games and history never crash the app: players survive, only broken parts are dropped, newer data is never written over",
+      "verification": "game-data.test.ts broken-data table and newer-version cases; game-store.test.ts broken game key leaves players alone and newer game is not overwritten",
+      "passes": true
+    },
+    {
+      "id": "AC-8",
+      "description": "Typecheck, tests and build pass locally and in CI",
+      "verification": "npm run typecheck, npm test, npm run build locally; PR checks green",
+      "passes": false
+    },
+    {
+      "id": "AC-9",
+      "description": "Redo puts back what Undo took (a round or End game), in reverse order of undoing; a new round or End game clears it; it survives closing the app",
+      "verification": "game.test.ts redoNext cases; game-data.test.ts Redo list loading; manual: Undo then Redo a round and End game in Chrome",
+      "passes": true
+    }
+  ]
+}

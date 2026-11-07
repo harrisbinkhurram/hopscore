@@ -9,15 +9,19 @@ export interface RoundInput {
   readonly votes: Readonly<Record<PlayerId, PlayerId>>;
 }
 
-export type ScoreReasonKind =
-  | 'storyteller-some-found'
-  | 'storyteller-all-found'
-  | 'storyteller-none-found'
-  | 'found-storyteller'
-  | 'missed-storyteller'
-  | 'all-found-storyteller'
-  | 'none-found-storyteller'
-  | 'votes-on-card';
+/** Every reason kind, for checking reasons read back from a saved game. */
+export const SCORE_REASON_KINDS = [
+  'storyteller-some-found',
+  'storyteller-all-found',
+  'storyteller-none-found',
+  'found-storyteller',
+  'missed-storyteller',
+  'all-found-storyteller',
+  'none-found-storyteller',
+  'votes-on-card',
+] as const;
+
+export type ScoreReasonKind = (typeof SCORE_REASON_KINDS)[number];
 
 export interface ScoreReason {
   /** Stable code, for styling or translation. */

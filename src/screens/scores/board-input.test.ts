@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { applyRound, endGame, newGame, scorePending, type Game, type SeatedPlayer } from '../../game';
-import { boardPlayers, finalePlay, roundPlay, winnerIds } from './board-input';
+import { applyRound, endGame, newGame, scorePending, undoLast, type Game, type SeatedPlayer } from '../../game';
+import { boardPlayers, finalePlay, roundPlay, undoPlay, winnerIds } from './board-input';
 
 const SEATS: SeatedPlayer[] = [
   { id: 'a', name: 'Ada', colour: 'berry' },
@@ -67,5 +67,25 @@ describe('finalePlay', () => {
   it('moves nobody and names the winners', () => {
     const game = endGame(oneRound(newGame(SEATS, 30)));
     expect(finalePlay(game)).toEqual({ players: boardPlayers(game), gains: {}, storyteller: '', winners: ['b'] });
+  });
+});
+
+describe('undoPlay', () => {
+  it('starts from the totals before Undo and hops back by the undone points', () => {
+    const one = oneRound(newGame(SEATS, 30));
+    // a tells again, with the same votes.
+    const two = applyRound(one, scorePending(one, 'a', { b: 'a', c: 'a', d: 'b' }));
+    const undone = undoLast(two);
+    const play = undoPlay(two, undone)!;
+    expect(play.before.map((p) => p.score)).toEqual([two.totals.a, two.totals.b, two.totals.c, two.totals.d]);
+    expect(play.round.players).toEqual(boardPlayers(undone));
+    expect(play.round.gains).toEqual({ a: -3, b: -4, c: -3, d: 0 });
+    expect(play.round.storyteller).toBe('');
+    expect(play.round.winners).toEqual([]);
+  });
+
+  it('is null when nobody moves (Undo of End game)', () => {
+    const ended = endGame(oneRound(newGame(SEATS, 30)));
+    expect(undoPlay(ended, undoLast(ended))).toBeNull();
   });
 });

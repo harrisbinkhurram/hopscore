@@ -20,6 +20,38 @@ export interface Game {
   readonly totals: Totals;
   /** True once the scorekeeper tapped End game. */
   readonly endedByHand: boolean;
+  /** Steps taken back with Undo, the most recent last. Redo puts them back; a new move clears them. */
+  readonly redo: readonly UndoneStep[];
+}
+
+/** A step taken back with Undo: a round, or End game. */
+export type UndoneStep = { readonly kind: 'round'; readonly round: RoundResult } | { readonly kind: 'end' };
+
+/** A round entered but not confirmed yet, kept so Home then Resume does not lose it. */
+export interface RoundDraft {
+  readonly storyteller: PlayerId;
+  readonly votes: Readonly<Record<PlayerId, PlayerId>>;
+}
+
+/** A game as read back from the device, before `restoreGame` checks it against the rules. */
+export interface SavedGameParts {
+  readonly seats: readonly SeatedPlayer[];
+  readonly trackLength: number;
+  readonly storyteller: PlayerId;
+  readonly rounds: readonly SavedRoundParts[];
+  readonly endedByHand: boolean;
+  /** Steps that can be redone. Broken ones cost only the redo list, never the game. */
+  readonly redo?: readonly ({ readonly kind: 'end' } | { readonly kind: 'round'; readonly round: SavedRoundParts })[];
+}
+
+/** One round as read back from the device. */
+export interface SavedRoundParts {
+  readonly storyteller: PlayerId;
+  readonly scores: readonly {
+    readonly player: PlayerId;
+    readonly points: number;
+    readonly reasons: readonly { readonly kind: string; readonly points: number; readonly text: string }[];
+  }[];
 }
 
 /** A row of the score list. */

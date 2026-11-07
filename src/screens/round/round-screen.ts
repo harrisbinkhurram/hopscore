@@ -1,13 +1,7 @@
 import { button, h, swatch } from '../dom';
 import './round.css';
-import { applyRound, scorePending, voteChoices, type Game, type SeatedPlayer } from '../../game';
+import { applyRound, scorePending, voteChoices, type Game, type RoundDraft, type SeatedPlayer } from '../../game';
 import type { PlayerId } from '../../scoring';
-
-/** A round entered but not confirmed yet, kept so Home then Resume does not lose it. */
-export interface RoundDraft {
-  readonly storyteller: PlayerId;
-  readonly votes: Readonly<Record<PlayerId, PlayerId>>;
-}
 
 export interface RoundScreenOptions {
   /** Where to start; defaults to the game's storyteller and no votes. */

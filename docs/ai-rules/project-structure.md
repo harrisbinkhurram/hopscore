@@ -12,7 +12,7 @@ A static Vite + TypeScript app, deployed to GitHub Pages. No backend: all data s
 | `src/scoring/` | Pure scoring logic | No UI, no storage. Callers import `src/scoring/index.ts`. Rule numbers live only in `rules.ts` |
 | `src/storage/` | Players and groups on the device | Changes never throw. One store per page. See `src/storage/README.md` |
 | `src/game/` | The game in progress: seats, rounds, totals, standings | Pure: no DOM, no storage. Callers import `src/game/index.ts`. Scores only through `scoring` |
-| `src/screens/` | The app's screens, one folder each (`players/`, `setup/`, `round/`, `scores/`) | Screen file plus its own CSS. Shared helpers in `dom.ts`, shared styles in `common.css` |
+| `src/screens/` | The app's screens, one folder each (`players/`, `setup/`, `round/`, `scores/`, `history/`) | Screen file plus its own CSS. Shared helpers in `dom.ts`, shared styles in `common.css` |
 | `src/board/` | Three.js garden board, bunnies and the round animations | Loaded lazily (`import()`) so Three.js stays out of the first load. Own `BoardPlayer` type; no imports from `game`, `scoring` or `storage`. Timing is pure in `choreography.ts` and `motion.ts`. See `src/board/README.md` |
 | `src/style.css` | Global styles and colour variables | |
 | `public/` | Static files copied as-is (`favicon.svg`) | |

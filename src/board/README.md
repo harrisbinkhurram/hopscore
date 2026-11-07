@@ -15,7 +15,7 @@ const board = createBoard(container, {
 board.setPlayers(nextPlayers); // new scores; bunnies jump straight there
 await board.play({             // play one round from the current scores
   players: afterRound,         //   scores after the round
-  gains: { a: 3 },             //   points gained this round (not clamped to the track)
+  gains: { a: 3 },             //   points gained this round (not clamped; negative hops back)
   storyteller: 'a',
   winners: [],                 //   non-empty only when the game is over
 });
@@ -33,7 +33,7 @@ round starts and stops (the scores screen shows Skip with it).
 `play()` shows where everyone was for a moment, then:
 
 - each bunny that scored hops forward one stone at a time, smallest gain first (ties in the
-  order given), facing where it goes, with squash and stretch and a dust puff on each landing.
+  order given); a negative gain (Undo) hops back the same way, with no celebration, facing where it goes, with squash and stretch and a dust puff on each landing.
   A bunny landing on a shared stone takes its place in the group and the others make room;
 - a gain of 5 or more (`BIG_ROUND`) ends with a spin and a burst of petals;
 - a storyteller on 0 droops its ears for a moment;

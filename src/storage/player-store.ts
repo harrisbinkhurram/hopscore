@@ -216,7 +216,8 @@ function fail<T>(error: string): Result<T> {
   return { ok: false, error };
 }
 
-function newId(): string {
+/** A fresh random id. */
+export function newId(): string {
   try {
     if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
       return crypto.randomUUID();
