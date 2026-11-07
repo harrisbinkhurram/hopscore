@@ -1,7 +1,7 @@
 // The shared helpers load common.css first, so this screen's CSS can override it.
 import { button, errorLine, h, swatch } from '../dom';
 import './players.css';
-import { BUNNY_COLOURS, bunnyColour } from '../../storage/colours';
+import { BUNNY_COLOURS, bunnyColour, colourLocked } from '../../storage/colours';
 import type { PlayerStore, Result } from '../../storage/player-store';
 import { LIMITS, type Group, type Player } from '../../storage/types';
 
@@ -31,6 +31,13 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
    * render gets it back, because each render rebuilds the screen and the old element is gone.
    */
   let focusKey: string | null = null;
+  /**
+   * Player order for this visit: sorted once when the screen opens, then kept, so a rename or a
+   * new colour never moves a row under the finger. New players go to the end.
+   */
+  const order = store.players().map((p) => p.id);
+  /** The same for groups. */
+  const groupOrder = store.groups().map((g) => g.id);
 
   const set = (next: Partial<{ open: Open; confirmDelete: string | null; message: { at: 'add' | 'editor'; text: string } | null }>) => {
     if (next.open) {
@@ -122,8 +129,24 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
     return h('section', { className: 'ps-section' }, ...parts);
   }
 
+  /** The players in this visit's order. */
+  function shownPlayers(): Player[] {
+    const all = store.players();
+    for (const p of all) if (!order.includes(p.id)) order.push(p.id);
+    const byId = new Map(all.map((p) => [p.id, p]));
+    return order.map((id) => byId.get(id)).filter((p): p is Player => p !== undefined);
+  }
+
+  /** The groups in this visit's order. */
+  function shownGroups(): Group[] {
+    const all = store.groups();
+    for (const g of all) if (!groupOrder.includes(g.id)) groupOrder.push(g.id);
+    const byId = new Map(all.map((g) => [g.id, g]));
+    return groupOrder.map((id) => byId.get(id)).filter((g): g is Group => g !== undefined);
+  }
+
   function playerList() {
-    const players = store.players();
+    const players = shownPlayers();
     const section = h('section', { className: 'ps-section' });
     if (players.length === 0) {
       section.append(h('p', { className: 'ps-empty', textContent: 'No players yet. Add the first one above.' }));
@@ -162,10 +185,15 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
 
     const colours = h('div', { className: 'ps-colours', role: 'radiogroup' });
     colours.setAttribute('aria-label', 'Bunny colour');
+    const others = store.players().filter((p) => p.id !== player.id);
+    const otherColours = others.map((p) => p.colour);
     for (const c of BUNNY_COLOURS) {
       const chosen = c.id === player.colour;
+      const holders = others.filter((p) => p.colour === c.id).map((p) => p.name);
+      const locked = !chosen && colourLocked(c.id, otherColours);
       // Stay in the editor without `open`, so a rename typed but not saved is kept.
-      const b = button('', `ps-colour${chosen ? ' is-chosen' : ''}`, () => {
+      const b = button('', `ps-colour${chosen ? ' is-chosen' : ''}${holders.length > 0 ? ' is-taken' : ''}`, () => {
+        if (locked) return;
         const result = store.recolourPlayer(player.id, c.id);
         set(result.ok ? {} : { message: { at: 'editor', text: result.error } });
       });
@@ -173,6 +201,12 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
       b.setAttribute('role', 'radio');
       b.setAttribute('aria-checked', String(chosen));
       b.append(swatch(c.id), h('span', { textContent: c.name }));
+      if (holders.length > 0) {
+        // Who has it. While a free colour is left, a taken one cannot be picked.
+        b.append(h('span', { className: 'ps-holder', textContent: holders.join(', ') }));
+        b.setAttribute('aria-label', `${c.name}, taken by ${holders.join(', ')}`);
+      }
+      if (locked) b.setAttribute('aria-disabled', 'true');
       colours.append(b);
     }
     editor.append(colours);
@@ -186,7 +220,7 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
 
   function groupSection() {
     const section = h('section', { className: 'ps-section' }, h('h2', { textContent: 'Groups' }));
-    const groups = store.groups();
+    const groups = shownGroups();
     const list = h('ul', { className: 'ps-list' });
     for (const group of groups) {
       const isOpen = open.kind === 'group' && open.id === group.id;
@@ -238,7 +272,7 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
     updateCount();
 
     const checks = h('div', { className: 'ps-checks' });
-    for (const player of store.players()) {
+    for (const player of shownPlayers()) {
       const box = h('input', { type: 'checkbox', checked: picked.has(player.id) });
       box.dataset.focus = `check:${player.id}`;
       box.addEventListener('change', () => {

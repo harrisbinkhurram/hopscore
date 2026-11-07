@@ -160,6 +160,30 @@
   font-weight: 700;
 }
 
+/* Held by another player: greyed, with the holder's name. Locked while a free colour is left. */
+.ps-colour.is-taken:not(.is-chosen) {
+  color: var(--muted);
+  border-style: dashed;
+}
+
+.ps-colour[aria-disabled='true'] {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.ps-holder {
+  margin-left: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.ps-colour.is-chosen .ps-holder {
+  margin-left: 0;
+}
+
 .ps-colour.is-chosen::after {
   content: '✓';
   margin-left: auto;

@@ -5,7 +5,7 @@ after every change.
 
 | Folder | Screen |
 |---|---|
-| `players/` | Players and groups |
+| `players/` | Players and groups. The list keeps its order while the screen is open (a rename or new colour never moves a row; new ones go last) and is sorted again on the next visit. The colour picker shows who has each colour and locks taken ones while a free one is left |
 | `setup/` | New game: group or players, seat order (drag or up/down), track length |
 | `round/` | One round: storyteller, each player's vote, then the points with reasons and Confirm |
 | `scores/` | The garden board with a compact score readout after a round, and the winner view when the game is over |

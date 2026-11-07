@@ -1,4 +1,4 @@
-import { isBunnyColour, pickFreeColour } from './colours';
+import { bunnyColour, colourLocked, isBunnyColour, pickFreeColour } from './colours';
 import { cleanName, loadData } from './migrate';
 import { SafeStorage, type StorageLike } from './safe-storage';
 import { LIMITS, type Group, type Player, type SavedData } from './types';
@@ -23,6 +23,7 @@ export interface PlayerStore {
   groups(): Group[];
   addPlayer(name: string, colour?: string): Result<Player>;
   renamePlayer(id: string, name: string): Result<Player>;
+  /** Fails while another player holds the colour and a free one is left; once all are held they are shared. */
   recolourPlayer(id: string, colour: string): Result<Player>;
   /** Also removes the player from every group. */
   deletePlayer(id: string): void;
@@ -95,6 +96,15 @@ export function createPlayerStore(backend?: StorageLike | null): PlayerStore {
     return ok({ id: exceptId ?? newId(), name: clean, playerIds: ids });
   };
 
+  /** Fails when another player holds `colour` and a free colour is still left. */
+  const checkColour = (colour: string, exceptId?: string): Result<string> => {
+    if (!isBunnyColour(colour)) return fail('Pick a colour from the list.');
+    const others = state.players.filter((p) => p.id !== exceptId);
+    if (!colourLocked(colour, others.map((p) => p.colour))) return ok(colour);
+    const holder = others.find((p) => p.colour === colour)!;
+    return fail(`${holder.name} has ${bunnyColour(colour).name}. Pick a free colour.`);
+  };
+
   const updatePlayer = (id: string, change: Partial<Player>): Result<Player> => {
     const current = find(id);
     if (!current) return fail('That player is gone.');
@@ -128,7 +138,10 @@ export function createPlayerStore(backend?: StorageLike | null): PlayerStore {
     addPlayer(name, colour) {
       const checked = checkPlayerName(name);
       if (!checked.ok) return checked;
-      if (colour !== undefined && !isBunnyColour(colour)) return fail('Pick a colour from the list.');
+      if (colour !== undefined) {
+        const free = checkColour(colour);
+        if (!free.ok) return free;
+      }
       const player: Player = {
         id: newId(),
         name: checked.value,
@@ -145,8 +158,9 @@ export function createPlayerStore(backend?: StorageLike | null): PlayerStore {
     },
 
     recolourPlayer(id, colour) {
-      if (!isBunnyColour(colour)) return fail('Pick a colour from the list.');
-      return updatePlayer(id, { colour });
+      if (find(id)?.colour === colour) return ok(find(id)!);
+      const free = checkColour(colour, id);
+      return free.ok ? updatePlayer(id, { colour }) : free;
     },
 
     deletePlayer(id) {

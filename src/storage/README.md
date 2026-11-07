@@ -75,6 +75,9 @@ never written over, as for the players.
 ## Rules
 
 - Player names: 1 to 20 characters, unique ignoring case.
+- Colours: a new player gets a free colour. A colour another player has cannot be picked while a
+  free one is left (`colourLocked` in `colours.ts`); once all 8 are taken, colours are shared.
+  Colours shared in data saved before this rule are kept as they are.
 - Groups: name 1 to 30 characters, unique ignoring case, 3 to 6 players. Deleting a player removes
   it from its groups; a group left with fewer than 3 is kept and the screen marks it.
 
