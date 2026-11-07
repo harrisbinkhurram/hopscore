@@ -1,0 +1,119 @@
+/* New game screen. Shared buttons, chips and the screen column are in ../common.css. */
+
+.su-add {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.su-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 3rem;
+  padding: 0 0.875rem;
+  border: 2px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.0625rem; /* 17px+: stops iOS zooming on focus. */
+}
+
+.su-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.su-seats {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.su-seat {
+  min-height: 3.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 2px solid var(--line);
+  border-radius: 0.875rem;
+  background: var(--surface);
+}
+
+.su-seat.is-dragging {
+  border-color: var(--accent);
+  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 0.2);
+}
+
+.su-handle {
+  flex: none;
+  width: 3rem;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 1.25rem;
+  cursor: grab;
+  touch-action: none; /* The finger drags the row instead of scrolling the page. */
+  user-select: none;
+}
+
+.su-seat-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.su-seat-name .screen-hint {
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.su-move {
+  flex: none;
+  padding: 0;
+}
+
+.su-note {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--surface);
+  border-left: 0.25rem solid var(--accent);
+}
+
+.su-stepper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.su-step {
+  width: 3.5rem;
+  padding: 0;
+  font-size: 1.5rem;
+}
+
+.su-track-value {
+  min-width: 6rem;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.su-start {
+  min-height: 3.5rem;
+  font-size: 1.125rem;
+}
+
+.su-center {
+  text-align: center;
+}

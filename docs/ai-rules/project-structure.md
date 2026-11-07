@@ -11,7 +11,8 @@ A static Vite + TypeScript app, deployed to GitHub Pages. No backend: all data s
 | `src/app/` | App-wide bits (name, tagline) | |
 | `src/scoring/` | Pure scoring logic | No UI, no storage. Callers import `src/scoring/index.ts`. Rule numbers live only in `rules.ts` |
 | `src/storage/` | Players and groups on the device | Changes never throw. One store per page. See `src/storage/README.md` |
-| `src/screens/` | The app's screens, one folder each (`players/`) | Screen file plus its own CSS |
+| `src/game/` | The game in progress: seats, rounds, totals, standings | Pure: no DOM, no storage. Callers import `src/game/index.ts`. Scores only through `scoring` |
+| `src/screens/` | The app's screens, one folder each (`players/`, `setup/`, `round/`, `scores/`) | Screen file plus its own CSS. Shared helpers in `dom.ts`, shared styles in `common.css` |
 | `src/board/` | Three.js garden board and bunnies (tasks 05, 06) | Only a README so far |
 | `src/style.css` | Global styles and colour variables | |
 | `public/` | Static files copied as-is (`favicon.svg`) | |
@@ -21,7 +22,7 @@ A static Vite + TypeScript app, deployed to GitHub Pages. No backend: all data s
 
 ## Dependency direction
 
-`screens` and `main.ts` may use `scoring` and `storage`. `scoring` imports nothing from the app. `storage` does not import `scoring` or `screens`.
+`screens` and `main.ts` may use `game`, `scoring` and `storage`. `game` uses `scoring` only. `scoring` imports nothing from the app. `storage` does not import `scoring`, `game` or `screens`.
 
 ## Each folder has a README
 

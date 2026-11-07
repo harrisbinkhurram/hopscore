@@ -1,29 +1,12 @@
 /* Players and groups screen. Phone first: one column, tap targets at least 48px. */
 
-#app.screen-root {
-  justify-content: flex-start;
-  align-items: stretch;
-  text-align: left;
-}
-
 .players-screen {
-  --ps-surface: #ffffff;
-  --ps-line: #e6dccd;
-  --ps-danger: #c2334f;
   width: 100%;
   max-width: 32rem;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  .players-screen {
-    --ps-surface: #29243a;
-    --ps-line: #3d3650;
-    --ps-danger: #ff7d95;
-  }
 }
 
 .ps-header {
@@ -71,9 +54,9 @@
   min-width: 0;
   min-height: 3rem;
   padding: 0 0.875rem;
-  border: 2px solid var(--ps-line);
+  border: 2px solid var(--line);
   border-radius: 0.75rem;
-  background: var(--ps-surface);
+  background: var(--surface);
   color: var(--text);
   font: inherit;
   font-size: 1.0625rem; /* 17px+: stops iOS zooming on focus. */
@@ -82,52 +65,6 @@
 .ps-input:focus {
   outline: none;
   border-color: var(--accent);
-}
-
-.btn {
-  min-height: 3rem;
-  min-width: 3rem;
-  padding: 0 1.125rem;
-  border: 2px solid var(--ps-line);
-  border-radius: 0.75rem;
-  background: var(--ps-surface);
-  color: var(--text);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-.btn-primary {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
-}
-
-@media (prefers-color-scheme: dark) {
-  .btn-primary {
-    color: #142018;
-  }
-}
-
-.btn-ghost {
-  background: transparent;
-}
-
-.btn-wide {
-  width: 100%;
-}
-
-.btn-danger {
-  align-self: flex-start;
-  border-color: var(--ps-danger);
-  background: transparent;
-  color: var(--ps-danger);
-}
-
-.btn-danger.is-armed {
-  background: var(--ps-danger);
-  color: #fff;
 }
 
 .ps-list {
@@ -147,9 +84,9 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.25rem 0.75rem;
-  border: 2px solid var(--ps-line);
+  border: 2px solid var(--line);
   border-radius: 0.875rem;
-  background: var(--ps-surface);
+  background: var(--surface);
   color: var(--text);
   font: inherit;
   text-align: left;
@@ -182,17 +119,9 @@
 
 .ps-warn {
   flex-basis: 100%;
-  color: var(--ps-danger);
+  color: var(--danger);
   font-size: 0.9rem;
   font-weight: 700;
-}
-
-.ps-swatch {
-  flex: none;
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 50%;
-  border: 2px solid rgb(0 0 0 / 0.15);
 }
 
 .ps-editor {
@@ -202,7 +131,7 @@
   flex-direction: column;
   gap: 0.875rem;
   border-radius: 0.875rem;
-  background: var(--ps-surface);
+  background: var(--surface);
 }
 
 .ps-colours {
@@ -217,7 +146,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  border: 2px solid var(--ps-line);
+  border: 2px solid var(--line);
   border-radius: 0.75rem;
   background: transparent;
   color: var(--text);
@@ -267,15 +196,4 @@
 
 .ps-actions .btn-primary {
   flex: 1;
-}
-
-.ps-error {
-  margin: 0;
-  color: var(--ps-danger);
-  font-weight: 700;
-}
-
-/* Home screen link to this screen. */
-.home-link {
-  margin-top: 1.5rem;
 }

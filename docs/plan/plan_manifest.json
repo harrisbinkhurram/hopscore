@@ -5,7 +5,7 @@
   "story_ticket": null,
   "created": "2026-11-05",
   "owner": "harrisbinkhurram",
-  "status": "planned",
+  "status": "in_progress",
   "story_branch": null,
   "spec_path": "spec.md",
   "docs_store_base": null,
@@ -28,10 +28,10 @@
       "depends_on": [
         1
       ],
-      "status": "in_progress",
+      "status": "completed",
       "task_flow_folder": "docs/tasks/HS-02",
       "branch": "feature/hs-02-scoring-engine",
-      "pr": null
+      "pr": 2
     },
     {
       "sequence": 3,
@@ -40,10 +40,10 @@
       "depends_on": [
         1
       ],
-      "status": "planned",
-      "task_flow_folder": null,
-      "branch": null,
-      "pr": null
+      "status": "completed",
+      "task_flow_folder": "docs/tasks/HS-03",
+      "branch": "feature/hs-03-players-and-groups",
+      "pr": 3
     },
     {
       "sequence": 4,
@@ -53,9 +53,9 @@
         2,
         3
       ],
-      "status": "planned",
-      "task_flow_folder": null,
-      "branch": null,
+      "status": "in_progress",
+      "task_flow_folder": "docs/tasks/HS-04",
+      "branch": "feature/hs-04-setup-and-round-entry",
       "pr": null
     },
     {
@@ -65,10 +65,10 @@
       "depends_on": [
         1
       ],
-      "status": "planned",
-      "task_flow_folder": null,
-      "branch": null,
-      "pr": null
+      "status": "completed",
+      "task_flow_folder": "docs/tasks/HS-05",
+      "branch": "feature/hs-05-garden-board-and-bunnies",
+      "pr": 4
     },
     {
       "sequence": 6,

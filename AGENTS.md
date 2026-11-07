@@ -18,11 +18,12 @@ CI (`.github/workflows/deploy.yml`) runs npm ci, npm test and npm run build on e
 | Path | Holds |
 |---|---|
 | `index.html` | Page shell |
-| `src/main.ts` | Entry point and home page; creates the one player store |
+| `src/main.ts` | Entry point, home page and the game flow; creates the one player store |
 | `src/app/` | App-wide bits (name, tagline) |
 | `src/scoring/` | Pure scoring logic, imported through its index.ts |
 | `src/storage/` | Players and groups saved on the device, with migrations |
-| `src/screens/` | The app's screens, one folder each |
+| `src/game/` | The game in progress: seats, rounds, totals. Pure, imported through its index.ts |
+| `src/screens/` | The app's screens, one folder each, with shared helpers in `dom.ts` and `common.css` |
 | `src/board/` | The Three.js garden board and bunnies (planned) |
 | `docs/plan/` | Spec, overview, plan manifest and the task prompts |
 | `docs/tasks/` | One folder per task (HS-NN): raw prompt, execution plan, acceptance criteria |
