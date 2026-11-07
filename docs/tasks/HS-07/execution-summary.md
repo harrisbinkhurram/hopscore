@@ -3,7 +3,7 @@
 ## Current State
 - **Phase:** 4 (Finish)
 - **Branch:** feature/hs-07-undo-resume-history
-- **Last Action:** Code, tests, docs and review fixes done; PR next
+- **Last Action:** PR #8 opened, CI green
 
 ## Q&A Log
 - Leave-page prompt once the game is saved? **Keep it always** (Harris).
@@ -33,4 +33,4 @@
   width stayed inside the viewport there).
 
 ## Next Steps
-- Code review, commit, PR, CI.
+- PR #8 open, CI green. Merge when Harris asks.
