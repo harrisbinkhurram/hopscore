@@ -55,7 +55,7 @@
       "id": "AC-9",
       "description": "Typecheck, tests and build pass locally and in CI on the PR",
       "verification": "npm run typecheck && npm test && npm run build locally; gh pr checks green",
-      "passes": false
+      "passes": true
     }
   ]
 }
