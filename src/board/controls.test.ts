@@ -112,3 +112,68 @@ describe('attachControls', () => {
     expect(c.listeners.size).toBe(0);
   });
 });
+
+describe('attachControls tap', () => {
+  const start = poseAt({ x: 0, y: 0.8, z: 0 }, 40);
+
+  function setupTaps() {
+    let pose: CameraPose = start;
+    const counts = { taps: 0, resets: 0 };
+    const { el, fire } = fakeElement();
+    attachControls(el, {
+      pose: () => pose,
+      lens: () => LENS,
+      limits: () => LIMITS,
+      move: (p) => {
+        pose = p;
+      },
+      reset: () => {
+        counts.resets += 1;
+      },
+      tap: () => {
+        counts.taps += 1;
+      },
+    });
+    return { fire, counts };
+  }
+
+  it('reports a single tap at once', () => {
+    const c = setupTaps();
+    c.fire('pointerdown', 1, 100, 100);
+    c.fire('pointerup', 1, 100, 100);
+    expect(c.counts).toEqual({ taps: 1, resets: 0 });
+  });
+
+  it('reports one tap and one reset for a double tap', () => {
+    const c = setupTaps();
+    c.fire('pointerdown', 1, 100, 100);
+    c.fire('pointerup', 1, 100, 100);
+    c.fire('pointerdown', 1, 102, 101);
+    c.fire('pointerup', 1, 102, 101);
+    expect(c.counts).toEqual({ taps: 1, resets: 1 });
+  });
+
+  it('does not tap after a drag', () => {
+    const c = setupTaps();
+    c.fire('pointerdown', 1, 100, 100);
+    c.fire('pointermove', 1, 160, 100);
+    c.fire('pointerup', 1, 160, 100);
+    expect(c.counts.taps).toBe(0);
+  });
+
+  it('does not tap after a pinch, whichever finger lifts last', () => {
+    const c = setupTaps();
+    c.fire('pointerdown', 1, 180, 450);
+    c.fire('pointerdown', 2, 220, 450);
+    c.fire('pointerup', 2, 220, 450);
+    c.fire('pointerup', 1, 180, 450);
+    expect(c.counts.taps).toBe(0);
+  });
+
+  it('does not tap when the browser cancels the touch', () => {
+    const c = setupTaps();
+    c.fire('pointerdown', 1, 100, 100);
+    c.fire('pointercancel', 1, 100, 100);
+    expect(c.counts.taps).toBe(0);
+  });
+});

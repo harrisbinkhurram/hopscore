@@ -24,7 +24,7 @@ CI (`.github/workflows/deploy.yml`) runs npm ci, npm test and npm run build on e
 | `src/storage/` | Players and groups saved on the device, with migrations |
 | `src/game/` | The game in progress: seats, rounds, totals. Pure, imported through its index.ts |
 | `src/screens/` | The app's screens, one folder each, with shared helpers in `dom.ts` and `common.css` |
-| `src/board/` | The Three.js garden board and bunnies (planned) |
+| `src/board/` | The Three.js garden board, bunnies and round animations, loaded lazily |
 | `docs/plan/` | Spec, overview, plan manifest and the task prompts |
 | `docs/tasks/` | One folder per task (HS-NN): raw prompt, execution plan, acceptance criteria |
 

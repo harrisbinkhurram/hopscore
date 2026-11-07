@@ -8,6 +8,8 @@ const DEBUG_SCORES = [3, 8, 8, 14, 14, 22];
 export interface DebugSetup {
   trackLength: number;
   players: BoardPlayer[];
+  /** `motion=reduce` plays rounds as the phone's reduced-motion setting would. */
+  reducedMotion: boolean;
 }
 
 function int(value: string | null, fallback: number, min: number, max: number): number {
@@ -18,7 +20,7 @@ function int(value: string | null, fallback: number, min: number, max: number): 
 
 /**
  * Reads the debug board's URL params: `players` (1 to 6, capped by the test colours),
- * `length` (5 to 100, default 30) and `scores` (comma separated).
+ * `length` (5 to 100, default 30), `scores` (comma separated) and `motion=reduce`.
  */
 export function parseDebugParams(search: string): DebugSetup {
   const q = new URLSearchParams(search);
@@ -34,7 +36,12 @@ export function parseDebugParams(search: string): DebugSetup {
     color: DEBUG_COLOURS[i],
     score: scores[i] ?? DEBUG_SCORES[i],
   }));
-  return { trackLength, players };
+  return { trackLength, players, reducedMotion: q.get('motion') === 'reduce' };
+}
+
+/** Random round gains (0 to 7) for the "Play round" button, from a supplied random source. */
+export function randomGains(count: number, random: () => number): number[] {
+  return Array.from({ length: count }, () => Math.floor(random() * 8));
 }
 
 /** Random scores for the "Random" button, from a supplied random source. */

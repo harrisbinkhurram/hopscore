@@ -7,6 +7,8 @@ import { clampPose, groundPointAt, panBy, zoomAbout, type CameraPose, type Lens,
  * - Two fingers pinch to zoom, about the point between them, and pan as they move.
  * - Mouse wheel / trackpad zooms about the cursor.
  * - Double tap (or double click) goes back to the whole track.
+ * - A single tap is reported at once (the board uses it to skip a round). The second tap of a
+ *   double tap only resets.
  */
 export interface ControlsHost {
   pose(): CameraPose | null;
@@ -16,6 +18,8 @@ export interface ControlsHost {
   move(pose: CameraPose): void;
   /** Double tap. */
   reset(): void;
+  /** A single tap: no movement, one finger, not a cancelled touch. */
+  tap?(): void;
 }
 
 const DOUBLE_TAP_MS = 320;
@@ -93,9 +97,9 @@ export function attachControls(el: HTMLElement, host: ControlsHost): () => void 
     }
   }
 
-  function onUp(e: PointerEvent) {
+  function onUp(e: PointerEvent, cancelled = false) {
     if (!pointers.delete(e.pointerId)) return;
-    if (pointers.size > 0 || downAt.moved) return;
+    if (pointers.size > 0 || downAt.moved || cancelled) return;
     const now = performance.now();
     const near = Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < TAP_SLOP_PX * 3;
     if (now - lastTap.time < DOUBLE_TAP_MS && near) {
@@ -103,7 +107,13 @@ export function attachControls(el: HTMLElement, host: ControlsHost): () => void 
       host.reset();
     } else {
       lastTap = { time: now, x: e.clientX, y: e.clientY };
+      host.tap?.();
     }
+  }
+
+  /** The browser took the touch over (a scroll, a system gesture): never a tap. */
+  function onCancel(e: PointerEvent) {
+    onUp(e, true);
   }
 
   function onWheel(e: WheelEvent) {
@@ -119,14 +129,14 @@ export function attachControls(el: HTMLElement, host: ControlsHost): () => void 
   el.addEventListener('pointerdown', onDown);
   el.addEventListener('pointermove', onMove);
   el.addEventListener('pointerup', onUp);
-  el.addEventListener('pointercancel', onUp);
+  el.addEventListener('pointercancel', onCancel);
   el.addEventListener('wheel', onWheel, { passive: false });
 
   return () => {
     el.removeEventListener('pointerdown', onDown);
     el.removeEventListener('pointermove', onMove);
     el.removeEventListener('pointerup', onUp);
-    el.removeEventListener('pointercancel', onUp);
+    el.removeEventListener('pointercancel', onCancel);
     el.removeEventListener('wheel', onWheel);
   };
 }

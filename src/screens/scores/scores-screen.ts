@@ -1,8 +1,12 @@
 import { button, h, SECOND_TAP_DELAY_MS, swatch } from '../dom';
 import './scores.css';
+import type { Board } from '../../board/board';
 import { endGame, gameOver, standings, type Game } from '../../game';
+import { boardPlayers, finalePlay, roundPlay, type PlayMode } from './board-input';
 
 export interface ScoresScreenOptions {
+  /** `round` plays the last round on the board, `finale` only the winner's dance, `none` shows the scores. */
+  play: PlayMode;
   onNextRound: () => void;
   /** End game was tapped twice: `game` is now over. */
   onEnd: (game: Game) => void;
@@ -12,8 +16,8 @@ export interface ScoresScreenOptions {
 }
 
 /**
- * The plain score list after a round, or the winner view once the game is over.
- * Task 06 puts the board in place of this list. Returns a no-op unsubscribe: this screen reads no store.
+ * The garden board with a compact score readout after a round, or the winner view once the
+ * game is over. Returns an unsubscribe that disposes the board.
  */
 export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresScreenOptions) {
   const over = gameOver(game);
@@ -22,6 +26,39 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
   let confirmEnd = false;
   let armedAt = 0;
   let firstRender = true;
+
+  // The board lives for this screen visit. Re-renders move the same stage, so it never replays.
+  const stage = h('div', { className: 'sc-stage' });
+  const skip = button('Skip', 'btn sc-skip', () => board?.skip());
+  skip.setAttribute('aria-label', 'Skip the animation');
+  skip.hidden = true;
+  stage.append(skip);
+  let board: Board | null = null;
+  let boardFailed = false;
+  let left = false;
+  startBoard();
+
+  function startBoard() {
+    const rp = options.play === 'round' ? roundPlay(game) : null;
+    import('../../board/board')
+      .then(({ createBoard }) => {
+        if (left) return;
+        board = createBoard(stage, {
+          trackLength: game.trackLength,
+          players: rp ? rp.before : boardPlayers(game),
+          onPlayingChange: (playing) => {
+            skip.hidden = !playing;
+          },
+        });
+        if (rp) void board.play(rp.round);
+        else if (options.play === 'finale') void board.play(finalePlay(game));
+      })
+      .catch(() => {
+        // No WebGL, or the board failed to load: the readout still has every score.
+        boardFailed = true;
+        stage.remove();
+      });
+  }
 
   function render() {
     root.classList.add('screen-root');
@@ -38,8 +75,10 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
         button('Home', 'btn btn-ghost', options.onHome),
         h('h1', { textContent: game.rounds.length === 0 ? 'Scores' : `After round ${game.rounds.length}` })));
     }
+    if (!boardFailed) screen.append(stage);
 
     const list = h('ol', { className: 'sc-list' });
+    list.setAttribute('aria-label', 'Scores');
     for (const row of rows) {
       const gained = lastPoints.get(row.player.id);
       const item = h('li', { className: `sc-row${row.winner && over ? ' is-winner' : ''}` },
@@ -90,7 +129,11 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
   }
 
   render();
-  return () => {};
+  return () => {
+    left = true;
+    board?.dispose();
+    board = null;
+  };
 }
 
 function plural(n: number, word: string) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDebugParams, randomScores } from './debug-params';
+import { parseDebugParams, randomGains, randomScores } from './debug-params';
 
 describe('parseDebugParams', () => {
   it('defaults to 4 players on a 30-step track', () => {
@@ -33,5 +33,19 @@ describe('randomScores', () => {
     const scores = randomScores(50, 30, () => ((s += 0.37) % 1));
     expect(Math.min(...scores)).toBeGreaterThanOrEqual(0);
     expect(Math.max(...scores)).toBeLessThanOrEqual(32);
+  });
+});
+
+describe('reduced motion param', () => {
+  it('is off unless the URL asks for it', () => {
+    expect(parseDebugParams('?board').reducedMotion).toBe(false);
+    expect(parseDebugParams('?board&motion=reduce').reducedMotion).toBe(true);
+  });
+});
+
+describe('randomGains', () => {
+  it('gives whole gains from 0 to 7', () => {
+    expect(randomGains(3, () => 0)).toEqual([0, 0, 0]);
+    expect(randomGains(2, () => 0.999)).toEqual([7, 7]);
   });
 });
