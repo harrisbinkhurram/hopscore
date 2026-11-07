@@ -214,3 +214,8 @@ See [acceptance_criteria.json](acceptance_criteria.json).
   fixed: Home in the middle of a round now keeps the storyteller and the votes entered, and Resume
   brings them back (before, the round started empty again); the unused `.note` style is removed.
   The draft fix was checked by typecheck, tests and build, not by hand.
+- 2026-11-07: PR self-review (fresh reviewer agent), three fixes: up/down and the track stepper keep
+  keyboard focus when the pressed button disables at the end of its range (focus moves to its
+  partner); the inline-add error clears on the next change; the storyteller and vote chip rows are
+  labelled groups (`role="group"`). Checked in Chrome. Questions on back/refresh, New game over a
+  game in progress, and double tap on End game went to Harris.

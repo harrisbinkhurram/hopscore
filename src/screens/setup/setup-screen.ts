@@ -23,7 +23,9 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
   /** The `data-focus` key to focus after the next render. */
   let focusKey: string | null = null;
 
+  /** Any change clears the last add error; the add handler sets it again when it fails. */
   const update = (change: () => void) => {
+    addError = null;
     change();
     render();
   };
@@ -45,7 +47,12 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
     root.replaceChildren(screen);
     window.scrollTo(0, scrollY);
     if (keep) {
-      [...screen.querySelectorAll<HTMLElement>('[data-focus]')].find((e) => e.dataset.focus === keep)?.focus({ preventScroll: true });
+      const all = [...screen.querySelectorAll<HTMLElement>('[data-focus]')];
+      const byKey = (key: string | null) => all.find((e) => e.dataset.focus === key);
+      let target = byKey(keep);
+      // A button that just reached the end of its range is disabled and cannot take focus.
+      if (target instanceof HTMLButtonElement && target.disabled) target = byKey(partnerKey(keep));
+      target?.focus({ preventScroll: true });
     }
   }
 
@@ -247,4 +254,13 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
 
   render();
   return store.subscribe(render);
+}
+
+/** The opposite button of a pair, which keeps focus when the pressed one becomes disabled. */
+function partnerKey(key: string): string | null {
+  if (key.startsWith('up:')) return `down:${key.slice('up:'.length)}`;
+  if (key.startsWith('down:')) return `up:${key.slice('down:'.length)}`;
+  if (key === 'track-less') return 'track-more';
+  if (key === 'track-more') return 'track-less';
+  return null;
 }

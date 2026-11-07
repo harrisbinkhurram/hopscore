@@ -80,6 +80,7 @@ export function showRoundScreen(root: HTMLElement, game: Game, options: RoundScr
     const section = h('section', { className: 'screen-section' }, line);
     if (changingTeller) {
       const chips = h('div', { className: 'chips' });
+      chips.setAttribute('role', 'group');
       chips.setAttribute('aria-label', 'Who told the story?');
       for (const seat of game.seats) {
         chips.append(chip(seat, seat.id === storyteller, `teller:${seat.id}`, () => update(() => {
@@ -98,7 +99,8 @@ export function showRoundScreen(root: HTMLElement, game: Game, options: RoundScr
 
   function voteSections() {
     return voters().map((voter) => {
-      const chips = h('div', { className: 'chips' });
+      const chips = h('div', { className: 'chips', role: 'group' });
+      chips.setAttribute('aria-label', `${voter.name} voted for`);
       for (const choice of voteChoices(game, voter.id)) {
         const c = chip(choice, votes[voter.id] === choice.id, `vote:${voter.id}:${choice.id}`, () => update(() => {
           votes = { ...votes, [voter.id]: choice.id };
@@ -112,7 +114,6 @@ export function showRoundScreen(root: HTMLElement, game: Game, options: RoundScr
       const heading = h('h2', { className: 'rd-voter' }, swatch(voter.colour),
         h('span', { textContent: `${voter.name} voted for` }));
       const section = h('section', { className: 'screen-section rd-vote' }, heading, chips);
-      section.setAttribute('aria-label', `${voter.name} voted for`);
       return section;
     });
   }
