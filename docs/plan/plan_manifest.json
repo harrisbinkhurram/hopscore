@@ -81,7 +81,7 @@
       "status": "in_progress",
       "task_flow_folder": "docs/tasks/HS-06",
       "branch": "feature/hs-06-hops-and-celebrations",
-      "pr": null
+      "pr": 7
     },
     {
       "sequence": 7,
