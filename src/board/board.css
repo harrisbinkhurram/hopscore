@@ -1,0 +1,50 @@
+.hs-board {
+  position: relative;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+.hs-board__canvas:active {
+  cursor: grabbing;
+}
+
+.hs-board__canvas {
+  display: block;
+  /* The board handles pinch and drag itself; stop the page zooming or scrolling. */
+  touch-action: none;
+  cursor: grab;
+  width: 100%;
+  height: 100%;
+}
+
+.hs-board__labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hs-board__stem {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  background: var(--bunny, #ffffff);
+  box-shadow: 0 0 0 1px rgb(255 250 242 / 70%);
+}
+
+.hs-board__label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: 8.5em;
+  padding: 0.15em 0.55em;
+  border: 2px solid #fffaf2;
+  border-radius: 999px;
+  background: var(--bunny, #ffffff);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 35%);
+  font: 700 0.875rem/1.2 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  will-change: transform;
+}

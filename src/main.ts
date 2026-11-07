@@ -35,4 +35,9 @@ function showHome(root: HTMLElement) {
   root.replaceChildren(title, tagline, note, players);
 }
 
-if (app) showHome(app);
+if (app && new URLSearchParams(window.location.search).has('board')) {
+  // Debug view of the 3D board. Loaded on demand, so Three.js stays out of the first load.
+  void import('./board/debug').then((m) => m.mountDebugBoard(app));
+} else if (app) {
+  showHome(app);
+}
