@@ -88,8 +88,8 @@ reaches the finish, then the finale), "Skip".
 | `track.ts` | stone positions along a winding path; picks the most compact path where no stones crowd (pure, tested) |
 | `layout.ts` | where each bunny stands; up to four gather on one stone, five or six in two rows (pure, tested) |
 | `camera.ts` | fit-the-whole-track, focus, zoom, pan and limits maths (pure, tested) |
-| `controls.ts` | pinch, drag, wheel and double-tap handling (tested with a stand-in element) |
-| `bunny.ts` | the code-built bunny; ears on pivots so they can droop, `setPose` for hops, squash, spin |
+| `controls.ts` | pinch, drag, wheel, single-tap and double-tap handling (tested with a stand-in element) |
+| `bunny.ts` | the code-built bunny; ears on pivots so they can droop, `setPose` for hops, squash, spin; shared parts freed with the last bunny (tested) |
 | `choreography.ts` | a round as ordered beats: hops, cheers, droop, finale (pure, tested) |
 | `motion.ts` | the timeline (beats, dust, petals, camera events), hop and squash curves (pure, tested) |
 | `effects.ts` | dust puffs and petals, pooled particles |

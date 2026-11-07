@@ -64,13 +64,19 @@ describe('timeline', () => {
     expect(GLIDE_MS).toBeLessThan(HOP_MS);
   });
 
+  const bigRound = (players: number) =>
+    timeline(Array.from({ length: players }, (_, i) => hop(`p${i}`, [1, 2, 3, 4, 5, 6, 7], true)), { reduced: false });
+  const movingMs = (tl: ReturnType<typeof timeline>) =>
+    tl.beats.reduce((n, b) => n + b.stepMs * (b.beat.kind === 'hop' ? b.beat.stones.length : 0), 0);
+
   it('keeps a long round within the budget by hopping faster', () => {
-    const beats = Array.from({ length: 8 }, (_, i) => hop(`p${i}`, [1, 2, 3, 4, 5, 6, 7], true));
-    const tl = timeline(beats, { reduced: false });
-    const moving = tl.beats.reduce((n, b) => n + b.stepMs * (b.beat.kind === 'hop' ? b.beat.stones.length : 0), 0);
-    expect(moving).toBeLessThanOrEqual(Math.max(MOVE_BUDGET_MS, 56 * MIN_HOP_MS));
-    expect(tl.beats[0].stepMs).toBeGreaterThanOrEqual(MIN_HOP_MS);
+    const tl = bigRound(6);
+    expect(movingMs(tl)).toBeCloseTo(MOVE_BUDGET_MS);
     expect(tl.beats[0].stepMs).toBeLessThan(HOP_MS);
+  });
+
+  it('never hops faster than the floor, even past the budget', () => {
+    expect(bigRound(8).beats[0].stepMs).toBe(MIN_HOP_MS);
   });
 
   it('is empty for no beats', () => {

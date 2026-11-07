@@ -17,7 +17,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
  *
  * Parts that share a colour are merged into one mesh. Each ear is its own pair of meshes on a
  * pivot so it can droop, so a bunny is 8 draw calls (fur, two ears, two inner ears, eyes, tail,
- * shadow). Geometry is built once and shared.
+ * shadow). Geometry and the plain materials are shared while any bunny is alive, and freed when
+ * the last one is disposed.
  * The bunny faces +z (towards the camera). Its feet are at y = 0.
  */
 
@@ -42,6 +43,8 @@ interface Parts {
 }
 
 let shared: Parts | null = null;
+/** Bunnies made and not yet disposed. */
+let live = 0;
 const sharedMaterials: Record<'inner' | 'eye' | 'tail' | 'shadow', Material | null> = {
   inner: null,
   eye: null,
@@ -126,6 +129,22 @@ function material(key: keyof typeof sharedMaterials): Material {
   return m;
 }
 
+/**
+ * Frees the shared parts. Each renderer that drew them keeps a dispose listener on them, so
+ * leaving them alive would keep every disposed board's renderer in memory.
+ */
+function releaseShared(): void {
+  if (shared) {
+    const { fur, ears, innerEars, eyes, tail, shadow } = shared;
+    for (const g of [fur, ...ears, ...innerEars, eyes, tail, shadow]) g.dispose();
+    shared = null;
+  }
+  for (const key of Object.keys(sharedMaterials) as (keyof typeof sharedMaterials)[]) {
+    sharedMaterials[key]?.dispose();
+    sharedMaterials[key] = null;
+  }
+}
+
 /** How a bunny is moving right now. Every field is optional; missing ones are at rest. */
 export interface BunnyPose {
   /** Height of the feet above the ground, in model units. */
@@ -149,6 +168,8 @@ export interface Bunny {
 /** Makes one bunny in the given CSS colour. */
 export function createBunny(color: string): Bunny {
   shared ??= buildParts();
+  live += 1;
+  let disposed = false;
   const furMaterial = new MeshLambertMaterial({ color: new Color(color), flatShading: true });
 
   const parts = shared;
@@ -193,7 +214,11 @@ export function createBunny(color: string): Bunny {
       }
     },
     dispose() {
+      if (disposed) return;
+      disposed = true;
       furMaterial.dispose();
+      live -= 1;
+      if (live === 0) releaseShared();
     },
   };
 }

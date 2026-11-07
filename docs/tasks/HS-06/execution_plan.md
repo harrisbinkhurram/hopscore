@@ -212,7 +212,7 @@ docs/tasks/HS-06/*                these task notes
 ## Documentation updates
 
 - `src/board/README.md`: `play`, `skip`, the options, what each beat looks like, reduced motion,
-  new files, debug buttons, draw calls now 9 per bunny.
+  new files, debug buttons, draw calls now 8 per bunny.
 - `src/screens/README.md`: the scores screen shows the board and readout; the play modes.
 - `README.md`: one line on the debug page buttons.
 - `AGENTS.md` and `docs/ai-rules/project-structure.md`: `src/board/` is no longer "planned" /
@@ -263,3 +263,8 @@ See [acceptance_criteria.json](acceptance_criteria.json).
   were checked frame by frame with a slowed clock on the debug page. Not checked: the light
   theme by eye, a real phone, the phone's own reduced-motion setting.
 
+- 2026-11-07: PR self-review fixes: the bunnies' shared geometry and materials are freed when
+  the last bunny is disposed (each renderer leaves a dispose listener on them, so keeping them
+  kept every disposed board's renderer in memory), with a test; the round-budget test is split
+  into a case where the 8 s budget holds and one that hits the 160 ms floor; the board README's
+  `controls.ts` row mentions the single tap.
