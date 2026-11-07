@@ -1,4 +1,4 @@
-import { button, errorLine, h, swatch } from '../dom';
+import { button, errorLine, h, SECOND_TAP_DELAY_MS, swatch } from '../dom';
 import './setup.css';
 import { newGame, setupProblems, TRACK_LENGTH, type Game, type SeatedPlayer } from '../../game';
 import { MAX_PLAYERS, MIN_PLAYERS } from '../../scoring';
@@ -6,6 +6,8 @@ import type { PlayerStore } from '../../storage/player-store';
 import { LIMITS } from '../../storage/types';
 
 export interface SetupScreenOptions {
+  /** True while an unfinished game exists: Start then warns and needs two taps. */
+  replacing?: boolean;
   onBack: () => void;
   onStart: (game: Game) => void;
 }
@@ -19,6 +21,8 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
   let seated: string[] = [];
   let trackLength: number = TRACK_LENGTH.default;
   let addError: string | null = null;
+  /** When Start was armed (replacing a game only); 0 means not armed. */
+  let startArmedAt = 0;
   let addDraft = '';
   /** The `data-focus` key to focus after the next render. */
   let focusKey: string | null = null;
@@ -26,6 +30,7 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
   /** Any change clears the last add error; the add handler sets it again when it fails. */
   const update = (change: () => void) => {
     addError = null;
+    startArmedAt = 0;
     change();
     render();
   };
@@ -236,7 +241,16 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
 
   function startSection() {
     const ready = setupProblems(seated, trackLength).length === 0;
-    const start = button('Start game', 'btn btn-primary btn-wide su-start', () => {
+    const armed = startArmedAt > 0;
+    const label = armed ? 'Tap again to start a new game' : 'Start game';
+    const start = button(label, `btn btn-primary btn-wide su-start${armed ? ' is-armed' : ''}`, () => {
+      if (options.replacing && !armed) {
+        startArmedAt = Date.now();
+        focusKey = 'start';
+        render();
+        return;
+      }
+      if (armed && Date.now() - startArmedAt < SECOND_TAP_DELAY_MS) return;
       const seats: SeatedPlayer[] = seated.map((id) => {
         const p = store.player(id)!;
         return { id: p.id, name: p.name, colour: p.colour };
@@ -246,10 +260,16 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
       options.onStart(game);
     });
     start.disabled = !ready;
+    start.dataset.focus = 'start';
     const hint = ready
       ? `${seated.length} players`
       : `${seated.length} picked. A game needs ${MIN_PLAYERS} to ${MAX_PLAYERS} players.`;
-    return h('section', { className: 'screen-section' }, start, h('p', { className: 'screen-hint su-center', textContent: hint }));
+    const parts: HTMLElement[] = [];
+    if (options.replacing) {
+      parts.push(h('p', { className: 'su-note su-warn', textContent: 'A game is in progress. Starting a new one ends it.' }));
+    }
+    parts.push(start, h('p', { className: 'screen-hint su-center', textContent: hint }));
+    return h('section', { className: 'screen-section' }, ...parts);
   }
 
   render();

@@ -117,3 +117,12 @@
 .su-center {
   text-align: center;
 }
+
+.su-warn {
+  border-left-color: var(--danger);
+}
+
+.su-start.is-armed {
+  border-color: var(--danger);
+  background: var(--danger);
+}

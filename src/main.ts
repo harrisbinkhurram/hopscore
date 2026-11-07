@@ -22,11 +22,29 @@ let roundDraft: RoundDraft | undefined;
 function open(show: () => () => void) {
   leaveScreen?.();
   leaveScreen = show();
+  guardGame();
 }
+
+function inProgress(): boolean {
+  return game !== null && !gameOver(game);
+}
+
+/**
+ * Until task 07 saves the game, a reload or leaving the page loses it. While a game is in
+ * progress: no pull-to-refresh (html.in-game in style.css), and the browser asks before leaving.
+ */
+function guardGame() {
+  document.documentElement.classList.toggle('in-game', inProgress());
+}
+
+window.addEventListener('beforeunload', (event) => {
+  if (inProgress()) event.preventDefault();
+});
 
 function showHome(root: HTMLElement) {
   leaveScreen?.();
   leaveScreen = null;
+  guardGame();
   root.classList.remove('screen-root');
 
   const parts: HTMLElement[] = [
@@ -34,7 +52,7 @@ function showHome(root: HTMLElement) {
     h('p', { className: 'tagline', textContent: APP_TAGLINE }),
     button('New game', 'btn btn-primary home-link', () => showSetup(root)),
   ];
-  if (game && !gameOver(game)) {
+  if (inProgress()) {
     parts.push(button('Resume game', 'btn home-link', () => showGame(root, gameView)));
   }
   parts.push(button('Players & groups', 'btn btn-ghost home-link', () =>
@@ -44,6 +62,7 @@ function showHome(root: HTMLElement) {
 
 function showSetup(root: HTMLElement) {
   open(() => showSetupScreen(root, store, {
+    replacing: inProgress(),
     onBack: () => showHome(root),
     onStart: (started) => {
       game = started;

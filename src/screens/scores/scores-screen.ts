@@ -1,4 +1,4 @@
-import { button, h, swatch } from '../dom';
+import { button, h, SECOND_TAP_DELAY_MS, swatch } from '../dom';
 import './scores.css';
 import { endGame, gameOver, standings, type Game } from '../../game';
 
@@ -20,6 +20,7 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
   const lastRound = game.rounds.at(-1);
   const lastPoints = new Map(lastRound?.scores.map((s) => [s.player, s.points]));
   let confirmEnd = false;
+  let armedAt = 0;
   let firstRender = true;
 
   function render() {
@@ -68,13 +69,14 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
     firstRender = false;
   }
 
-  /** End game needs two taps: there is no undo yet. */
+  /** End game needs two deliberate taps: there is no undo yet. */
   function endButton() {
     const b = button(confirmEnd ? 'Tap again to end the game' : 'End game', `btn btn-danger btn-wide${confirmEnd ? ' is-armed' : ''}`, () => {
       if (confirmEnd) {
-        options.onEnd(endGame(game));
+        if (Date.now() - armedAt >= SECOND_TAP_DELAY_MS) options.onEnd(endGame(game));
       } else {
         confirmEnd = true;
+        armedAt = Date.now();
         render();
         root.querySelector<HTMLElement>('.btn-danger')?.focus({ preventScroll: true });
       }

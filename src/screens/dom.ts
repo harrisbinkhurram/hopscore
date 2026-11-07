@@ -32,3 +32,9 @@ export function swatch(colourId: string) {
 export function errorLine(text: string) {
   return h('p', { className: 'error-line', role: 'alert', textContent: text });
 }
+
+/**
+ * After a two-tap button arms, taps are ignored for this long, so a quick double tap
+ * (two clicks on the same spot) cannot confirm by accident.
+ */
+export const SECOND_TAP_DELAY_MS = 400;

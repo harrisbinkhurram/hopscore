@@ -219,3 +219,9 @@ See [acceptance_criteria.json](acceptance_criteria.json).
   partner); the inline-add error clears on the next change; the storyteller and vote chip rows are
   labelled groups (`role="group"`). Checked in Chrome. Questions on back/refresh, New game over a
   game in progress, and double tap on End game went to Harris.
+- 2026-11-07: Harris's answers to the review questions, all built and checked in Chrome:
+  while a game is in progress the page blocks pull-to-refresh (`html.in-game`,
+  `overscroll-behavior-y: contain`) and asks before leaving (`beforeunload`; not triggered in the
+  test, it opens a browser dialog); New game warns "A game is in progress" and Start then takes
+  two taps; End game and that Start ignore a second tap within 400 ms (`SECOND_TAP_DELAY_MS`), so
+  a double tap cannot confirm. Task 07 can drop the leave prompt once games are saved.

@@ -57,3 +57,9 @@ body {
   font-size: clamp(1.125rem, 5vw, 1.5rem);
   font-weight: 600;
 }
+
+/* While a game is in progress, a pull-down must not reload the page and lose it (main.ts). */
+html.in-game,
+html.in-game body {
+  overscroll-behavior-y: contain;
+}
