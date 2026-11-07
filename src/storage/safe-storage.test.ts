@@ -49,4 +49,37 @@ describe('SafeStorage', () => {
     expect(storage.persistent).toBe(false);
     expect(storage.get('missing')).toBeNull();
   });
+
+  it('removes a key from working storage', () => {
+    const backend = new FakeStorage();
+    const storage = new SafeStorage(backend);
+    storage.set('k', 'v');
+    storage.remove('k');
+    expect(storage.get('k')).toBeNull();
+    expect(backend.items.has('k')).toBe(false);
+  });
+
+  it('really removes a key from full storage, which still allows removing', () => {
+    const backend = new FillingStorage();
+    backend.setItem('k', 'saved');
+    backend.full = true;
+    new SafeStorage(backend).remove('k');
+    expect(backend.getItem('k')).toBeNull();
+  });
+
+  it('does not read a removed key back from full storage', () => {
+    const backend = new FillingStorage();
+    backend.setItem('k', 'saved');
+    backend.full = true;
+    const storage = new SafeStorage(backend);
+    storage.remove('k');
+    expect(storage.get('k')).toBeNull();
+    storage.set('k', 'again');
+    expect(storage.get('k')).toBe('again');
+  });
+
+  it('never throws when removing from blocked storage', () => {
+    const storage = new SafeStorage(new BlockedStorage());
+    expect(() => storage.remove('k')).not.toThrow();
+  });
 });

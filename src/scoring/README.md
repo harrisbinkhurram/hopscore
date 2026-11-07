@@ -8,6 +8,7 @@ Pure scoring logic. No UI, no storage. Import from `src/scoring` (the `index.ts`
   impossible input; `validateRound` returns the same problems without throwing.
 - `nextStoryteller(seats, current)` gives the next storyteller in seat order.
 - `startingTotals`, `addRound`, `isGameOver(totals, trackLength, endedByHand)`, `winners` (ties share).
+- `SCORE_REASON_KINDS`: every reason `kind`, so a saved game's reasons can be checked.
 
 **Rule numbers live only in `rules.ts`**, including the 3-player rules, which are still to be
 checked against a rulebook. 3 players switches them on automatically (`rulesFor`).

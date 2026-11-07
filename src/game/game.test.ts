@@ -2,14 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { scoreRound, THREE_PLAYER_RULES } from '../scoring';
 import {
   applyRound,
+  canUndo,
   endGame,
   gameOver,
   newGame,
+  nextRedo,
+  redoNext,
+  restoreGame,
   scorePending,
   setupProblems,
   standings,
+  undoLast,
   voteChoices,
   type Game,
+  type SavedGameParts,
   type SeatedPlayer,
 } from './index';
 
@@ -131,5 +137,162 @@ describe('standings', () => {
       ['a', 4, 3, false],
       ['d', 2, 4, false],
     ]);
+  });
+});
+
+/** Plays a round where everyone finds the storyteller except the last voter, who picks the first voter. */
+function someFind(game: Game, teller = game.storyteller): Game {
+  const voters = game.seats.map((s) => s.id).filter((id) => id !== teller);
+  const votes: Record<string, string> = Object.fromEntries(voters.map((v) => [v, teller]));
+  votes[voters.at(-1)!] = voters[0]!;
+  return applyRound(game, scorePending(game, teller, votes));
+}
+
+describe('undoLast', () => {
+  it('takes off the last round: totals and storyteller go back', () => {
+    const one = someFind(newGame(FOUR, 30));
+    const two = someFind(one);
+    const undone = undoLast(two);
+    expect(undone.totals).toEqual(one.totals);
+    expect(undone.rounds).toEqual(one.rounds);
+    expect(undone.storyteller).toBe('b');
+  });
+
+  it('gives the round back to a storyteller changed on the round screen', () => {
+    const game = someFind(newGame(FOUR, 30), 'c');
+    expect(game.storyteller).toBe('d');
+    expect(undoLast(game).storyteller).toBe('c');
+  });
+
+  it('can undo again and again, down to no rounds', () => {
+    const start = newGame(FOUR, 30);
+    const three = someFind(someFind(someFind(start)));
+    const back = undoLast(undoLast(undoLast(three)));
+    expect(back.rounds).toEqual([]);
+    expect(back.totals).toEqual(start.totals);
+    expect(back.storyteller).toBe('a');
+    expect(canUndo(back)).toBe(false);
+  });
+
+  it('does nothing with no rounds', () => {
+    const start = newGame(FOUR, 30);
+    expect(undoLast(start)).toBe(start);
+  });
+
+  it('after End game, only reopens the game', () => {
+    const played = someFind(newGame(FOUR, 30));
+    const reopened = undoLast(endGame(played));
+    expect(gameOver(reopened)).toBe(false);
+    expect(reopened.rounds).toEqual(played.rounds);
+    expect(reopened.totals).toEqual(played.totals);
+  });
+
+  it('after a win at the finish, takes off the winning round', () => {
+    let game = newGame(FOUR, 10);
+    while (!gameOver(game)) game = someFind(game);
+    const reopened = undoLast(game);
+    expect(gameOver(reopened)).toBe(false);
+    expect(reopened.rounds).toHaveLength(game.rounds.length - 1);
+  });
+
+  it('does not change the game it is given', () => {
+    const game = someFind(newGame(FOUR, 30));
+    undoLast(game);
+    expect(game.rounds).toHaveLength(1);
+    expect(game.redo).toEqual([]);
+  });
+});
+
+describe('redoNext', () => {
+  it('puts back the undone round, totals and storyteller included', () => {
+    const two = someFind(someFind(newGame(FOUR, 30)));
+    expect(redoNext(undoLast(two))).toEqual(two);
+  });
+
+  it('redoes several steps in the order they were undone', () => {
+    const ended = endGame(someFind(someFind(newGame(FOUR, 30))));
+    const back = undoLast(undoLast(undoLast(ended)));
+    expect(nextRedo(back)).toEqual({ kind: 'round', round: ended.rounds[0] });
+    const once = redoNext(back);
+    expect(once.rounds).toHaveLength(1);
+    const twice = redoNext(once);
+    expect(nextRedo(twice)).toEqual({ kind: 'end' });
+    expect(redoNext(twice)).toEqual(ended);
+  });
+
+  it('does nothing with nothing to redo', () => {
+    const game = someFind(newGame(FOUR, 30));
+    expect(nextRedo(game)).toBeUndefined();
+    expect(redoNext(game)).toBe(game);
+  });
+
+  it('is cleared by a new round', () => {
+    const undone = undoLast(someFind(someFind(newGame(FOUR, 30))));
+    expect(someFind(undone).redo).toEqual([]);
+  });
+
+  it('is cleared by End game', () => {
+    const undone = undoLast(someFind(someFind(newGame(FOUR, 30))));
+    expect(endGame(undone).redo).toEqual([]);
+  });
+});
+
+describe('restoreGame', () => {
+  const played = undoLast(someFind(someFind(newGame(FOUR, 30))));
+  const parts = (change: Partial<SavedGameParts> = {}): SavedGameParts => ({
+    seats: played.seats,
+    trackLength: played.trackLength,
+    storyteller: played.storyteller,
+    rounds: played.rounds,
+    endedByHand: played.endedByHand,
+    redo: played.redo,
+    ...change,
+  });
+
+  it('rebuilds a saved game, working the totals out from the rounds', () => {
+    expect(restoreGame(parts())).toEqual(played);
+  });
+
+  it('reads a game saved without a Redo list', () => {
+    expect(restoreGame(parts({ redo: undefined }))?.redo).toEqual([]);
+  });
+
+  const round = played.rounds[0]!;
+  const badScore = (change: object) => ({ ...round, scores: round.scores.map((s, i) => (i === 0 ? { ...s, ...change } : s)) });
+  // [label, change that breaks a rule]
+  const broken: [string, Partial<SavedGameParts>][] = [
+    ['too few seats', { seats: FOUR.slice(0, 2) }],
+    ['the same seat twice', { seats: [...FOUR.slice(0, 3), FOUR[0]!] }],
+    ['a track out of range', { trackLength: 5 }],
+    ['a storyteller who is not seated', { storyteller: 'z' }],
+    ['a round told by someone not seated', { rounds: [{ ...round, storyteller: 'z' }] }],
+    ['a round missing a score', { rounds: [{ ...round, scores: round.scores.slice(1) }] }],
+    ['scores out of seat order', { rounds: [{ ...round, scores: [...round.scores].reverse() }] }],
+    ['negative points', { rounds: [badScore({ points: -1, reasons: [] })] }],
+    ['an unknown reason', { rounds: [badScore({ reasons: [{ kind: 'bribe', points: round.scores[0]!.points, text: '' }] })] }],
+    ['reasons that do not add up', { rounds: [badScore({ points: round.scores[0]!.points + 1 })] }],
+  ];
+  it.each(broken)('returns null for %s', (_label, change) => {
+    expect(restoreGame(parts(change))).toBeNull();
+  });
+
+  it('returns null for a round played after someone reached the finish', () => {
+    let won = newGame(FOUR, 10);
+    while (!gameOver(won)) won = someFind(won);
+    const extra = scorePending(won, won.storyteller, Object.fromEntries(
+      won.seats.filter((s) => s.id !== won.storyteller).map((s) => [s.id, won.storyteller])));
+    const base = { seats: won.seats, trackLength: 10, storyteller: won.storyteller, endedByHand: false };
+    expect(restoreGame({ ...base, rounds: won.rounds })).not.toBeNull();
+    expect(restoreGame({ ...base, rounds: [...won.rounds, extra] })).toBeNull();
+  });
+
+  it('drops only the Redo list when a step in it is broken', () => {
+    const game = restoreGame(parts({ redo: [{ kind: 'round', round: { ...round, storyteller: 'z' } }] }));
+    expect(game?.rounds).toEqual(played.rounds);
+    expect(game?.redo).toEqual([]);
+  });
+
+  it('drops a Redo list that would end an ended game again', () => {
+    expect(restoreGame(parts({ endedByHand: true, redo: [{ kind: 'end' }] }))?.redo).toEqual([]);
   });
 });

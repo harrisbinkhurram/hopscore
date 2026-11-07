@@ -14,6 +14,15 @@ Pure: no DOM, no storage. Import from `src/game` (the `index.ts`). Every point c
   so changing the storyteller on the round screen moves the rotation too.
 - `endGame`, `gameOver` (track length reached, or ended by hand), `standings` (ties share a rank
   and the win).
+- `undoLast(game)` takes back the last step: End game, or else the last round (its points come
+  off and whoever told it is the storyteller again). `canUndo` says if there is one.
+- `redoNext(game)` puts back the step undone last; `nextRedo` says which (a round or End game).
+  The Redo list lives on the game (`redo`); a new round or End game clears it.
+- `restoreGame(saved)` rebuilds a game read back from the device, or returns null when it breaks
+  a rule (seats, track, storyteller, scores out of seat order, unknown reasons or reasons that do
+  not add up, a round after someone reached the finish). Totals are always worked out again from the rounds. A broken Redo list costs only
+  the Redo list.
+- `RoundDraft`: the votes entered for the next round, saved with the game.
 
-Every function returns a new `Game` and never changes the one it is given. Saving the game and undo
-are task 07; the game lives in memory in `main.ts` until then.
+Every function returns a new `Game` and never changes the one it is given. Saving is `main.ts`'s
+job, through `src/storage/game-store.ts`.

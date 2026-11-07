@@ -5,8 +5,11 @@ import { gameOver, standings, type Game } from '../../game';
 import type { Totals } from '../../scoring';
 import { bunnyColour } from '../../storage/colours';
 
-/** What the scores screen plays on the board when it opens. */
-export type PlayMode = 'round' | 'finale' | 'none';
+/**
+ * What the scores screen plays on the board when it opens: the last round, only the finale,
+ * nothing, or the bunnies hopping back after an Undo from the game as it was.
+ */
+export type PlayMode = 'round' | 'finale' | 'none' | { readonly undoneFrom: Game };
 
 /** The game's players as the board shows them, in seat order. */
 export function boardPlayers(game: Game, totals: Totals = game.totals): BoardPlayer[] {
@@ -44,4 +47,18 @@ export function roundPlay(game: Game): { before: BoardPlayer[]; round: RoundPlay
 /** Only the finale, for a game just ended with End game: nobody moves. */
 export function finalePlay(game: Game): RoundPlay {
   return { players: boardPlayers(game), gains: {}, storyteller: '', winners: winnerIds(game) };
+}
+
+/**
+ * An Undo as the board plays it: everyone starts where they stood in `from` and hops back to
+ * their totals in `to`. Null when nobody moves (Undo of End game).
+ */
+export function undoPlay(from: Game, to: Game): { before: BoardPlayer[]; round: RoundPlay } | null {
+  const gains: Record<string, number> = {};
+  for (const seat of to.seats) gains[seat.id] = (to.totals[seat.id] ?? 0) - (from.totals[seat.id] ?? 0);
+  if (Object.values(gains).every((g) => g === 0)) return null;
+  return {
+    before: boardPlayers(to, from.totals),
+    round: { players: boardPlayers(to), gains, storyteller: '', winners: [] },
+  };
 }

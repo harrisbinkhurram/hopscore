@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { BUNNY_COLOURS } from './colours';
+import { BUNNY_COLOURS, bunnyColour, colourLocked } from './colours';
 import { createPlayerStore, PLAYERS_KEY, type Result } from './player-store';
 import { BlockedStorage, FakeStorage, FillingStorage } from './test-helpers';
 import { CURRENT_VERSION } from './types';
@@ -240,5 +240,39 @@ describe('another tab', () => {
 
     expect(calls).toBeGreaterThan(1);
     expect(createPlayerStore(backend).players().map((p) => p.name)).toEqual(['Ali', 'Sam']);
+  });
+});
+
+describe('players: colours', () => {
+  it('will not give a player a colour someone else has while a free one is left', () => {
+    const { store, ids } = storeWithPlayers(new FakeStorage(), 'Alice', 'Bob');
+    const bobs = store.player(ids[1])!.colour;
+    expect(error(store.recolourPlayer(ids[0], bobs))).toBe(`Bob has ${bunnyColour(bobs).name}. Pick a free colour.`);
+    expect(error(store.addPlayer('Cy', bobs))).toBe(`Bob has ${bunnyColour(bobs).name}. Pick a free colour.`);
+    expect(store.player(ids[0])!.colour).not.toBe(bobs);
+  });
+
+  it('lets a player keep their own colour', () => {
+    const { store, ids } = storeWithPlayers(new FakeStorage(), 'Alice');
+    expect(value(store.recolourPlayer(ids[0], store.player(ids[0])!.colour)).id).toBe(ids[0]);
+  });
+
+  it('shares colours once every colour is taken by someone else', () => {
+    const names = BUNNY_COLOURS.map((_, i) => `P${i}`);
+    const { store, ids } = storeWithPlayers(new FakeStorage(), ...names, 'Extra');
+    const extra = ids.at(-1)!;
+    // P1 leaving its colour would free one up, so it may not double up on P0's.
+    expect(store.recolourPlayer(ids[1], store.player(ids[0])!.colour).ok).toBe(false);
+    // The others hold all eight colours, so Extra may pick any of them.
+    const second = store.player(ids[1])!.colour;
+    expect(value(store.recolourPlayer(extra, second)).colour).toBe(second);
+  });
+});
+
+describe('colourLocked', () => {
+  it('locks a held colour while a free one is left, and never a free one', () => {
+    expect(colourLocked('sky', ['sky'])).toBe(true);
+    expect(colourLocked('clover', ['sky'])).toBe(false);
+    expect(colourLocked('sky', BUNNY_COLOURS.map((c) => c.id))).toBe(false);
   });
 });

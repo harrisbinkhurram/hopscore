@@ -15,6 +15,8 @@ export class SafeStorage {
   /** Kept for reading after writes stop working: full storage can still be read. */
   private readonly reader: StorageLike | null;
   private readonly memory = new Map<string, string>();
+  /** Keys removed in this session, so the read-only fallback does not bring an old value back. */
+  private readonly removed = new Set<string>();
 
   constructor(backend: StorageLike | null | undefined = defaultBackend()) {
     this.reader = backend ?? null;
@@ -35,6 +37,7 @@ export class SafeStorage {
       }
     }
     if (this.memory.has(key)) return this.memory.get(key)!;
+    if (this.removed.has(key)) return null;
     try {
       return this.reader?.getItem(key) ?? null;
     } catch {
@@ -43,12 +46,24 @@ export class SafeStorage {
   }
 
   set(key: string, value: string): void {
+    this.removed.delete(key);
     this.memory.set(key, value);
     if (!this.backend) return;
     try {
       this.backend.setItem(key, value);
     } catch {
       this.fallBack();
+    }
+  }
+
+  remove(key: string): void {
+    this.memory.delete(key);
+    this.removed.add(key);
+    try {
+      // Full storage still allows removing: it frees space.
+      (this.backend ?? this.reader)?.removeItem(key);
+    } catch {
+      if (this.backend) this.fallBack();
     }
   }
 

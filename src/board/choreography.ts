@@ -12,7 +12,7 @@ export const BIG_ROUND = 5;
 export interface RoundPlay {
   /** Scores after the round, in seat order. */
   players: readonly BoardPlayer[];
-  /** Points each player gained this round, not clamped to the track. Missing means 0. */
+  /** Points each player gained this round, not clamped to the track. Missing means 0. Negative (Undo) hops back. */
   gains: Readonly<Record<string, number>>;
   /** Who told the story. Empty when there is no round (End game). */
   storyteller: string;
@@ -32,13 +32,14 @@ export type Beat =
 /**
  * The beats for one round, in play order: smallest gain first, ties in seat order. A player
  * with no gain has no beat, except a storyteller on 0, who droops. The finale comes last.
+ * Negative gains (Undo) hop back without celebrations, so the longest hop back goes first.
  */
 export function planRound(before: readonly BoardPlayer[], round: RoundPlay, trackLength: number): Beat[] {
   const beforeScore = new Map(before.map((p) => [p.id, p.score]));
   const gainOf = (id: string) => round.gains[id] ?? 0;
 
   const movers = round.players
-    .filter((p) => gainOf(p.id) > 0 || (p.id === round.storyteller && gainOf(p.id) === 0))
+    .filter((p) => gainOf(p.id) !== 0 || p.id === round.storyteller)
     // Array sort is stable, so equal gains keep seat order.
     .sort((a, b) => gainOf(a.id) - gainOf(b.id));
 
@@ -51,8 +52,10 @@ export function planRound(before: readonly BoardPlayer[], round: RoundPlay, trac
     }
     const from = stoneForScore(beforeScore.get(p.id) ?? 0, trackLength);
     const to = stoneForScore(p.score, trackLength);
+    // A negative gain (Undo) hops back the same way, one stone at a time.
     const stones: number[] = [];
     for (let s = from + 1; s <= to; s += 1) stones.push(s);
+    for (let s = from - 1; s >= to; s -= 1) stones.push(s);
     const big = gain >= BIG_ROUND;
     if (stones.length > 0) beats.push({ kind: 'hop', id: p.id, stones, big });
     else if (big) beats.push({ kind: 'cheer', id: p.id });

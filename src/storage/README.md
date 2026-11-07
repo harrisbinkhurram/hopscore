@@ -29,11 +29,13 @@ the screen.
 
 | File | Holds |
 |---|---|
-| `types.ts` | `Player`, `Group`, `SavedData`, `CURRENT_VERSION`, name and group-size limits |
+| `types.ts` | `Player`, `Group`, `SavedData`, `CURRENT_VERSION`, name and group-size limits; `SavedGame`, `HistoryEntry`, their versions, `HISTORY_LIMIT` |
 | `colours.ts` | The bunny palette. Ids are saved: add new colours at the end, never rename one |
-| `migrate.ts` | `loadData()`: runs migrations, then checks every entry; never throws |
-| `safe-storage.ts` | `localStorage` wrapper that falls back to memory when blocked or full |
+| `migrate.ts` | `loadData()`: runs migrations, then checks every entry; never throws. `runMigrations()` is shared by every key |
+| `safe-storage.ts` | `localStorage` wrapper that falls back to memory when blocked or full; `remove()` keeps a removed key gone |
 | `player-store.ts` | The players and groups API |
+| `game-data.ts` | Reads a saved game and the history: migrations (`GAME_MIGRATIONS`, `HISTORY_MIGRATIONS`), shape checks |
+| `game-store.ts` | The game in progress and the history API |
 
 ## Saved data
 
@@ -44,11 +46,39 @@ One key, `hopscore.players`:
   "groups": [{ "id": "…", "name": "Friday crew", "playerIds": ["…"] }] }
 ```
 
-Games and history (later tasks) use their own keys, so a broken game never costs the players.
+## The game in progress and the history
+
+`createGameStore()` (`game-store.ts`) keeps two more keys, each with its own version, so a
+broken game never costs the players:
+
+- `hopscore.game`: `{ version, game: { seats, trackLength, storyteller, rounds, endedByHand,
+  redo }, view, draft, endedAt? }`. Saved after every step of a game (`main.ts`); `endedAt` is
+  when the game became over, so a game closed on the winner view keeps its real date. Totals are not saved:
+  they are worked out from the rounds. Nothing in the shape limits the number of players.
+- `hopscore.history`: `{ version, entries }`, finished games newest first, at most
+  `HISTORY_LIMIT` (10). Each entry: id, date, track length, rounds played, ended by hand, and
+  each player's name, colour and final score.
+
+```ts
+const games = createGameStore();
+games.saveGame({ game, view: 'scores', draft: null });
+games.savedGame();          // what was saved, shape-checked, or null
+games.recordFinished({ trackLength, rounds, endedByHand, players });
+games.deleteHistory(id);
+```
+
+Storage checks only the shape (`game-data.ts`); the game rules are checked by `restoreGame` in
+`src/game` (storage imports nothing from `game` or `scoring`). A game with any broken part is
+dropped whole, since keeping some rounds would change the scores; a broken Redo list or draft
+costs only itself; broken history entries are dropped one by one. Newer or unmigratable data is
+never written over, as for the players.
 
 ## Rules
 
 - Player names: 1 to 20 characters, unique ignoring case.
+- Colours: a new player gets a free colour. A colour another player has cannot be picked while a
+  free one is left (`colourLocked` in `colours.ts`); once all 8 are taken, colours are shared.
+  Colours shared in data saved before this rule are kept as they are.
 - Groups: name 1 to 30 characters, unique ignoring case, 3 to 6 players. Deleting a player removes
   it from its groups; a group left with fewer than 3 is kept and the screen marks it.
 

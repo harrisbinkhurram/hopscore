@@ -27,6 +27,15 @@ export function bunnyColour(id: string): BunnyColour {
   return BY_ID.get(id) ?? BUNNY_COLOURS[0];
 }
 
+/**
+ * True when `colour` is held by someone else and a colour nobody else holds is still left, so it
+ * cannot be picked. Once every colour is held, colours are shared again (there is no player limit).
+ */
+export function colourLocked(colour: string, usedByOthers: readonly string[]): boolean {
+  const used = new Set(usedByOthers);
+  return used.has(colour) && BUNNY_COLOURS.some((c) => !used.has(c.id));
+}
+
 /** The first colour nobody uses yet, or the least used one when all are taken. */
 export function pickFreeColour(used: readonly string[]): string {
   const counts = new Map(BUNNY_COLOURS.map((c) => [c.id, 0]));
