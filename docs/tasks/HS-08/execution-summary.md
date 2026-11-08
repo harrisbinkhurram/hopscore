@@ -9,7 +9,7 @@
 - **Phase:** 4 (Finish)
 - **Branch:** feature/hs-08-offline-install-polish
 - **Worktree:** true (reused, created before the flow started)
-- **Last Action:** PR #9 opened; waiting on CI for AC-12
+- **Last Action:** PR #9 open, CI green (run 42482986084); every acceptance criterion passes
 
 ## Q&A Log
 - New version deployed? **Button on Home** ("New version ready"), never mid-game; otherwise it
@@ -32,4 +32,4 @@
 - AC-1 / AC-6 methods accepted with notes in the PR; AC-12 flips once CI is green (Harris).
 
 ## Next Steps
-- Commit, push, open the PR into main; flip AC-12 when CI is green.
+- PR #9 open, CI green. Merge when Harris asks.

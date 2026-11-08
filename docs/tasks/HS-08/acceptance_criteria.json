@@ -73,7 +73,7 @@
       "id": "AC-12",
       "description": "Typecheck, tests and build pass locally and in CI",
       "verification": "npm run typecheck && npm test && npm run build locally; the PR's Test and deploy check is green",
-      "passes": false
+      "passes": true
     }
   ]
 }
