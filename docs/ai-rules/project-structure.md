@@ -15,7 +15,8 @@ A static Vite + TypeScript app, deployed to GitHub Pages. No backend: all data s
 | `src/screens/` | The app's screens, one folder each (`players/`, `setup/`, `round/`, `scores/`, `history/`) | Screen file plus its own CSS. Shared helpers in `dom.ts`, shared styles in `common.css` |
 | `src/board/` | Three.js garden board, bunnies and the round animations | Loaded lazily (`import()`) so Three.js stays out of the first load. Own `BoardPlayer` type; no imports from `game`, `scoring` or `storage`. Timing is pure in `choreography.ts` and `motion.ts`. See `src/board/README.md` |
 | `src/style.css` | Global styles and colour variables | |
-| `public/` | Static files copied as-is (`favicon.svg`) | |
+| `public/` | Static files copied as-is: `favicon.svg`, `manifest.webmanifest`, `icons/` | Manifest URLs stay relative, so they work under the `/hopscore/` base |
+| `build/` | Build code run by Vite in Node: `pwa.ts` writes the offline service worker; `icons/` holds the icon SVGs and `render.sh` | Type-checked with `tsconfig.node.json`. The service worker never touches localStorage |
 | `docs/plan/` | `spec.md`, `00_overview.md`, `plan_manifest.json`, `raw_prompts/` | The task plan |
 | `docs/tasks/HS-NN/` | `raw_prompt.md`, `execution_plan.md`, `acceptance_criteria.json` | One folder per task |
 | `.github/workflows/deploy.yml` | Test and build on PRs; deploy from `main` | |

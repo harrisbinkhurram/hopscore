@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createGameStore, GAME_KEY, HISTORY_KEY, type FinishedGame } from './game-store';
 import { createPlayerStore, PLAYERS_KEY } from './player-store';
 import { BlockedStorage, FakeStorage } from './test-helpers';
@@ -145,5 +145,69 @@ describe('game store: history', () => {
     backend.setItem(HISTORY_KEY, newer);
     createGameStore(backend).recordFinished(FINISHED, 1);
     expect(backend.getItem(HISTORY_KEY)).toBe(newer);
+  });
+});
+
+describe('game store: another tab', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  /** Two stores on one storage, as two tabs; `send` fires the storage event the other tab would get. */
+  function twoTabs() {
+    const fakeWindow = new EventTarget();
+    vi.stubGlobal('window', fakeWindow);
+    const backend = new FakeStorage();
+    const tabA = createGameStore(backend);
+    const tabB = createGameStore(backend);
+    const send = (key: string | null) => fakeWindow.dispatchEvent(Object.assign(new Event('storage'), { key }));
+    return { backend, tabA, tabB, send };
+  }
+
+  it("tells the tab when another tab changed the game, after reading it again", () => {
+    const { tabA, tabB, send } = twoTabs();
+    const seen: (SavedGame | null)[] = [];
+    tabA.onGameChanged(() => seen.push(tabA.savedGame()));
+    tabB.saveGame(SAVED);
+    send(GAME_KEY);
+    expect(seen).toEqual([SAVED]);
+  });
+
+  it('tells the tab when another tab cleared all storage', () => {
+    const { backend, tabA, send } = twoTabs();
+    tabA.saveGame(SAVED);
+    const seen: (SavedGame | null)[] = [];
+    tabA.onGameChanged(() => seen.push(tabA.savedGame()));
+    backend.removeItem(GAME_KEY);
+    send(null);
+    expect(seen).toEqual([null]);
+  });
+
+  it('says when the game another tab wrote is from a newer app, so it is kept safe', () => {
+    const { backend, tabA, send } = twoTabs();
+    let calls = 0;
+    tabA.onGameChanged(() => calls++);
+    backend.setItem(GAME_KEY, JSON.stringify({ version: GAME_VERSION + 1, ...SAVED }));
+    send(GAME_KEY);
+    expect(calls).toBe(1);
+    expect(tabA.gameKeptSafe).toBe(true);
+  });
+
+  it('stays quiet for the history and the players', () => {
+    const { tabA, send } = twoTabs();
+    let calls = 0;
+    tabA.onGameChanged(() => calls++);
+    send(HISTORY_KEY);
+    send(PLAYERS_KEY);
+    expect(calls).toBe(0);
+  });
+
+  it('stops telling the tab once unsubscribed', () => {
+    const { tabA, send } = twoTabs();
+    let calls = 0;
+    const stop = tabA.onGameChanged(() => calls++);
+    stop();
+    send(GAME_KEY);
+    expect(calls).toBe(0);
   });
 });

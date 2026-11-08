@@ -4,6 +4,7 @@ import { newGame, setupProblems, TRACK_LENGTH, type Game, type SeatedPlayer } fr
 import { MAX_PLAYERS, MIN_PLAYERS } from '../../scoring';
 import type { PlayerStore } from '../../storage/player-store';
 import { LIMITS } from '../../storage/types';
+import { playerEditor } from '../player-editor';
 
 export interface SetupScreenOptions {
   /** True while an unfinished game exists: Start then warns and needs two taps. */
@@ -24,6 +25,8 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
   /** When Start was armed (replacing a game only); 0 means not armed. */
   let startArmedAt = 0;
   let addDraft = '';
+  /** The seated player whose name and colour are open for editing, with what was typed and any error. */
+  let editing: { id: string; draft?: string; error: string | null } | null = null;
   /** The `data-focus` key to focus after the next render. */
   let focusKey: string | null = null;
 
@@ -38,6 +41,7 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
   function render() {
     // Drop anyone deleted from the saved players since they were seated.
     seated = seated.filter((id) => store.player(id));
+    if (editing && !seated.includes(editing.id)) editing = null;
     root.classList.add('screen-root');
     const screen = h('div', { className: 'screen setup-screen' },
       h('header', { className: 'screen-header' }, button('Back', 'btn btn-ghost', options.onBack),
@@ -142,7 +146,7 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
       section.append(h('p', { className: 'screen-hint', textContent: `Pick ${MIN_PLAYERS} to ${MAX_PLAYERS} players above.` }));
       return section;
     }
-    section.append(h('p', { className: 'screen-hint', textContent: 'The storyteller goes round in this order. Drag ☰ to move a player.' }));
+    section.append(h('p', { className: 'screen-hint', textContent: 'The storyteller goes round in this order. Drag ☰ to move a player. Tap a name to rename it or change its colour.' }));
     const list = h('ol', { className: 'su-seats' });
     seated.forEach((id, i) => {
       const player = store.player(id)!;
@@ -156,10 +160,18 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
       down.setAttribute('aria-label', `Move ${player.name} down`);
       down.disabled = i === seated.length - 1;
       down.dataset.focus = `down:${id}`;
-      const label = h('span', { className: 'su-seat-name' }, h('span', { textContent: player.name }));
-      if (i === 0) label.append(h('span', { className: 'screen-hint', textContent: 'Tells the first story' }));
-      const item = h('li', { className: 'su-seat' }, handle, swatch(player.colour), label, up, down);
+      const isEditing = editing?.id === id;
+      const label = button('', 'su-seat-name', () => update(() => {
+        editing = isEditing ? null : { id, error: null };
+      }));
+      label.append(swatch(player.colour), h('span', { className: 'su-seat-text' }, h('span', { textContent: player.name })));
+      if (i === 0) label.lastElementChild!.append(h('span', { className: 'screen-hint', textContent: 'Tells the first story' }));
+      label.setAttribute('aria-expanded', String(isEditing));
+      label.setAttribute('aria-label', `${player.name}: rename or change colour`);
+      label.dataset.focus = `edit:${id}`;
+      const item = h('li', { className: 'su-seat' }, handle, label, up, down);
       item.dataset.id = id;
+      if (isEditing) item.append(seatEditor(id));
       dragByHandle(handle, item, list);
       list.append(item);
     });
@@ -168,6 +180,27 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
       section.append(h('p', { className: 'su-note', textContent: '3 players: the 3-player rules are on. Each player puts in 2 cards.' }));
     }
     return section;
+  }
+
+  /** The shared name and colour editor, under the seated player's row. */
+  function seatEditor(id: string) {
+    const player = store.player(id)!;
+    const { rename, colours } = playerEditor(store, player, {
+      draft: editing?.draft,
+      onDraft: (text) => {
+        if (editing) editing.draft = text;
+      },
+      focusKey: `edit-name:${id}`,
+      onChange: (error) => {
+        // On success the typed name is saved: forget it, keep the editor open for more changes.
+        editing = { id, draft: error ? editing?.draft : undefined, error };
+        render();
+      },
+    });
+    const parts: HTMLElement[] = [rename];
+    if (editing?.error) parts.push(errorLine(editing.error));
+    parts.push(colours);
+    return h('div', { className: 'su-editor' }, ...parts);
   }
 
   function move(from: number, to: number) {

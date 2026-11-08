@@ -31,6 +31,11 @@ export interface GameStore {
   /** Adds a finished game; past the limit the oldest goes. */
   recordFinished(game: FinishedGame, now?: number): void;
   deleteHistory(id: string): void;
+  /**
+   * Calls `listener` after another tab changed the saved game (or cleared all storage), once this
+   * store has read it again. Returns a function that stops it.
+   */
+  onGameChanged(listener: () => void): () => void;
 }
 
 /**
@@ -42,11 +47,15 @@ export function createGameStore(backend?: StorageLike | null): GameStore {
   const storage = new SafeStorage(backend);
   let game = readGame(storage);
   let history = readHistory(storage);
+  const gameListeners = new Set<() => void>();
 
   if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
     window.addEventListener('storage', (event) => {
-      if (event.key === GAME_KEY || event.key === null) game = readGame(storage);
       if (event.key === HISTORY_KEY || event.key === null) history = readHistory(storage);
+      if (event.key === GAME_KEY || event.key === null) {
+        game = readGame(storage);
+        for (const listener of [...gameListeners]) listener();
+      }
     });
   }
 
@@ -100,6 +109,13 @@ export function createGameStore(backend?: StorageLike | null): GameStore {
     deleteHistory(id) {
       if (!history.entries.some((e) => e.id === id)) return;
       writeHistory(history.entries.filter((e) => e.id !== id));
+    },
+
+    onGameChanged(listener) {
+      gameListeners.add(listener);
+      return () => {
+        gameListeners.delete(listener);
+      };
     },
   };
 }

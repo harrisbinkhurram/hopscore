@@ -1,0 +1,80 @@
+/* The name field and colour picker for a saved player (players and new game screens). */
+
+.pe-rename {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pe-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 3rem;
+  padding: 0 0.875rem;
+  border: 2px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.0625rem; /* 17px+: stops iOS zooming on focus. */
+}
+
+.pe-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.pe-colours {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.pe-colour {
+  min-height: 3rem;
+  padding: 0 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 2px solid var(--line);
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.pe-colour.is-chosen {
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+/* Held by another player: greyed, with the holder's name. Locked while a free colour is left. */
+.pe-colour.is-taken:not(.is-chosen) {
+  color: var(--muted);
+  border-style: dashed;
+}
+
+.pe-colour[aria-disabled='true'] {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.pe-holder {
+  margin-left: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.pe-colour.is-chosen .pe-holder {
+  margin-left: 0;
+}
+
+.pe-colour.is-chosen::after {
+  content: '✓';
+  margin-left: auto;
+  color: var(--accent);
+}

@@ -26,7 +26,8 @@ board.dispose();
 ```
 
 Options: `reducedMotion` overrides the phone's setting; `onPlayingChange(playing)` says when a
-round starts and stops (the scores screen shows Skip with it).
+round starts and stops (the scores screen shows Skip with it); `quality` (`full` or `lite`) and
+`onSlow(next)` are for slow phones, below.
 
 ## A round
 
@@ -93,9 +94,23 @@ reaches the finish, then the finale), "Skip".
 | `choreography.ts` | a round as ordered beats: hops, cheers, droop, finale (pure, tested) |
 | `motion.ts` | the timeline (beats, dust, petals, camera events), hop and squash curves (pure, tested) |
 | `effects.ts` | dust puffs and petals, pooled particles |
+| `frame-watch.ts` | says when rounds play too slowly (pure, tested) |
 | `garden.ts` | open grass field with lighter and darker patches, the trail, stones, stone numbers, bushes, trees, flowers |
 | `board.ts` | scene, lights, camera, name labels, playing a round, the public API |
 | `debug.ts`, `debug-params.ts` | the `?board` debug page |
+
+## Slow phones
+
+While a round plays the board watches its frame times (`frame-watch.ts`): the average over a
+short window, ignoring the first frames of a round and pauses over 250 ms (a hidden tab). Under
+about 24 fps it slows down, which is below the 30 fps cap of battery-saver modes:
+
+1. at `full` it switches itself to `lite` (pixel ratio 1, no dust or petals; hops, spins,
+   droops and the finale stay) and calls `onSlow('lite')`;
+2. still too slow at `lite`, it calls `onSlow('flat')` once: the caller should swap it for
+   something simpler (the scores screen shows a 2D track).
+
+`quality: 'lite'` starts a board at the lower level, for a phone that was slow before.
 
 ## Keeping it light
 

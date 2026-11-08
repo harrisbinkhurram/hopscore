@@ -10,6 +10,8 @@ export interface RoundScreenOptions {
   onConfirm: (game: Game) => void;
   /** Home was tapped: `draft` is what had been entered. */
   onHome: (draft: RoundDraft) => void;
+  /** A vote or the storyteller changed: `draft` is what is entered now, to save as it is tapped. */
+  onDraftChange?: (draft: RoundDraft) => void;
 }
 
 /**
@@ -84,6 +86,7 @@ export function showRoundScreen(root: HTMLElement, game: Game, options: RoundScr
           votes = rest;
           changingTeller = false;
           focusKey = 'change-teller';
+          options.onDraftChange?.({ storyteller, votes });
         })));
       }
       section.append(chips);
@@ -98,6 +101,7 @@ export function showRoundScreen(root: HTMLElement, game: Game, options: RoundScr
       for (const choice of voteChoices(game, voter.id)) {
         const c = chip(choice, votes[voter.id] === choice.id, `vote:${voter.id}:${choice.id}`, () => update(() => {
           votes = { ...votes, [voter.id]: choice.id };
+          options.onDraftChange?.({ storyteller, votes });
         }));
         if (choice.id === storyteller) {
           c.classList.add('is-teller');

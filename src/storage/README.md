@@ -65,6 +65,7 @@ games.saveGame({ game, view: 'scores', draft: null });
 games.savedGame();          // what was saved, shape-checked, or null
 games.recordFinished({ trackLength, rounds, endedByHand, players });
 games.deleteHistory(id);
+games.onGameChanged(() => {}); // another tab changed the saved game; returns a stop function
 ```
 
 Storage checks only the shape (`game-data.ts`); the game rules are checked by `restoreGame` in
@@ -93,7 +94,9 @@ never written over, as for the players.
 - Broken saved data: broken entries are dropped one by one, the rest are kept.
 - Data from a newer app version, or data a migration fails on: read as best it can, never
   written over (`notSavedReason` is `'kept-safe'`).
-- Another tab saves: this store reloads from storage, so it does not write over that save.
+- Another tab saves: this store reloads from storage, so it does not write over that save. For
+  the game, `onGameChanged` then tells the page (also when another tab cleared storage, or wrote
+  a game this version keeps safe), so it can drop its own copy.
 
 ## Adding a migration
 

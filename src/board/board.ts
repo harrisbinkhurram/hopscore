@@ -13,6 +13,7 @@ import { distanceOf, fitPoints, focusOn, FOCUS_DISTANCE, poseAt, type CameraPose
 import { planRound, type RoundPlay } from './choreography';
 import { attachControls } from './controls';
 import { createEffects } from './effects';
+import { createFrameWatch } from './frame-watch';
 import { createGarden } from './garden';
 import { layoutBunnies, stoneForScore, type BoardPlayer, type BunnySpot } from './layout';
 import { droopAmount, easeInOut, hopHeight, squash, timeline, type Timeline, type TimedEvent } from './motion';
@@ -28,7 +29,16 @@ export interface BoardOptions {
   reducedMotion?: boolean;
   /** Told when a round starts and stops playing, for example to show a Skip button. */
   onPlayingChange?: (playing: boolean) => void;
+  /** `lite` starts with fewer pixels and no dust or petals (the board was slow before). Default `full`. */
+  quality?: BoardQuality;
+  /**
+   * Told when rounds play too slowly. `lite`: the board has turned its effects down by itself.
+   * `flat`: still too slow at `lite`; the caller should swap the board for something simpler.
+   */
+  onSlow?: (next: 'lite' | 'flat') => void;
 }
+
+export type BoardQuality = 'full' | 'lite';
 
 export interface Board {
   /** Updates names, colours and scores. Bunnies jump straight to their stones; a round playing is skipped first. */
@@ -121,7 +131,9 @@ export function createBoard(container: HTMLElement, options: BoardOptions): Boar
 
   container.classList.add('hs-board');
   const renderer = new WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  let quality: BoardQuality = options.quality ?? 'full';
+  const pixelRatio = () => (quality === 'lite' ? 1 : Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(pixelRatio());
   renderer.domElement.className = 'hs-board__canvas';
   const labelLayer = document.createElement('div');
   labelLayer.className = 'hs-board__labels';
@@ -159,6 +171,9 @@ export function createBoard(container: HTMLElement, options: BoardOptions): Boar
   let frame = 0;
   let lastFrame = 0;
   let disposed = false;
+  /** Watches frame times while a round plays; see `slowDown`. */
+  const frames = createFrameWatch();
+  let gaveUp = false;
 
   const reduced = () => options.reducedMotion ?? motionQuery?.matches ?? false;
 
@@ -239,6 +254,12 @@ export function createBoard(container: HTMLElement, options: BoardOptions): Boar
     frame = 0;
     if (disposed) return;
     const dt = lastFrame ? now - lastFrame : 16;
+    // Only frames drawn one after another count; the first after a rest has no real duration.
+    if (playing && lastFrame && frames.add(dt)) {
+      slowDown();
+      // The caller may have swapped the board out in `onSlow`.
+      if (disposed) return;
+    }
     lastFrame = now;
     let busy = false;
     if (playing) {
@@ -354,8 +375,11 @@ export function createBoard(container: HTMLElement, options: BoardOptions): Boar
     }
     const e = entries.get(event.id);
     if (!e) return;
-    if (event.kind === 'dust') effects.spawnDust(e.pos);
-    else if (event.kind === 'petals') effects.spawnPetals(e.pos);
+    if (event.kind === 'dust') {
+      if (quality === 'full') effects.spawnDust(e.pos);
+    } else if (event.kind === 'petals') {
+      if (quality === 'full') effects.spawnPetals(e.pos);
+    }
     else if (view.kind !== 'free') view = { kind: 'follow', id: event.id };
   }
 
@@ -480,6 +504,20 @@ export function createBoard(container: HTMLElement, options: BoardOptions): Boar
     options.onPlayingChange?.(false);
   }
 
+  /** Rounds play too slowly: first fewer pixels and no particles, then ask for a simpler board. */
+  function slowDown() {
+    if (quality === 'full') {
+      quality = 'lite';
+      effects.clear();
+      renderer.setPixelRatio(pixelRatio());
+      frames.reset();
+      options.onSlow?.('lite');
+    } else if (!gaveUp) {
+      gaveUp = true;
+      options.onSlow?.('flat');
+    }
+  }
+
   function play(round: RoundPlay): Promise<void> {
     if (disposed) return Promise.resolve();
     finish(true);
@@ -491,6 +529,7 @@ export function createBoard(container: HTMLElement, options: BoardOptions): Boar
     const tl = timeline(planRound(shown, round, track.length), { reduced: reduced() });
     // Names and colours change at once; positions move with the round.
     for (const p of round.players) dressEntry(entries.get(p.id)!, p);
+    frames.reset();
     return new Promise((resolve) => {
       playing = {
         tl,

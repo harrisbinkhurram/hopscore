@@ -1,7 +1,8 @@
 // The shared helpers load common.css first, so this screen's CSS can override it.
 import { button, errorLine, h, swatch } from '../dom';
 import './players.css';
-import { BUNNY_COLOURS, bunnyColour, colourLocked } from '../../storage/colours';
+import { bunnyColour } from '../../storage/colours';
+import { playerEditor as sharedEditor } from '../player-editor';
 import type { PlayerStore, Result } from '../../storage/player-store';
 import { LIMITS, type Group, type Player } from '../../storage/types';
 
@@ -172,43 +173,21 @@ export function showPlayersScreen(root: HTMLElement, store: PlayerStore, options
 
   function playerEditor(player: Player) {
     const editor = h('div', { className: 'ps-editor' });
-
-    const input = textInput('rename', player.name, `Rename ${player.name}`, LIMITS.playerNameMax);
-    const rename = h('form', { className: 'ps-add' }, input,
-      h('button', { className: 'btn', type: 'submit', textContent: 'Rename' }));
-    rename.addEventListener('submit', (e) => {
-      e.preventDefault();
-      apply(store.renamePlayer(player.id, input.value), { kind: 'player', id: player.id });
+    const { rename, colours } = sharedEditor(store, player, {
+      draft: drafts.rename,
+      onDraft: (text) => {
+        drafts.rename = text;
+      },
+      focusKey: 'draft:rename',
+      // Stay in the editor without `open`; on success the typed name is saved, so forget it.
+      onChange: (error) => {
+        if (error) return set({ message: { at: 'editor', text: error } });
+        delete drafts.rename;
+        set({});
+      },
     });
     editor.append(rename);
     if (message?.at === 'editor') editor.append(errorLine(message.text));
-
-    const colours = h('div', { className: 'ps-colours', role: 'radiogroup' });
-    colours.setAttribute('aria-label', 'Bunny colour');
-    const others = store.players().filter((p) => p.id !== player.id);
-    const otherColours = others.map((p) => p.colour);
-    for (const c of BUNNY_COLOURS) {
-      const chosen = c.id === player.colour;
-      const holders = others.filter((p) => p.colour === c.id).map((p) => p.name);
-      const locked = !chosen && colourLocked(c.id, otherColours);
-      // Stay in the editor without `open`, so a rename typed but not saved is kept.
-      const b = button('', `ps-colour${chosen ? ' is-chosen' : ''}${holders.length > 0 ? ' is-taken' : ''}`, () => {
-        if (locked) return;
-        const result = store.recolourPlayer(player.id, c.id);
-        set(result.ok ? {} : { message: { at: 'editor', text: result.error } });
-      });
-      b.dataset.focus = `colour:${c.id}`;
-      b.setAttribute('role', 'radio');
-      b.setAttribute('aria-checked', String(chosen));
-      b.append(swatch(c.id), h('span', { textContent: c.name }));
-      if (holders.length > 0) {
-        // Who has it. While a free colour is left, a taken one cannot be picked.
-        b.append(h('span', { className: 'ps-holder', textContent: holders.join(', ') }));
-        b.setAttribute('aria-label', `${c.name}, taken by ${holders.join(', ')}`);
-      }
-      if (locked) b.setAttribute('aria-disabled', 'true');
-      colours.append(b);
-    }
     editor.append(colours);
 
     editor.append(deleteButton(`player:${player.id}`, `Delete ${player.name}`, () => {

@@ -34,7 +34,7 @@
   padding: 0;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
   gap: 0.375rem;
 }
 
@@ -138,4 +138,56 @@
 .sc-undo .btn {
   flex: 1 1 0;
   min-width: 0;
+}
+
+/* The 2D track, when the 3D board is too slow or cannot run. */
+.sc-stage.is-flat {
+  height: auto;
+  padding: 0.75rem 0.5rem;
+  background: var(--surface);
+}
+
+/* As tall as the track needs: the stage's fixed height suits the 3D board, not this. */
+.sc-flat {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.sc-flat-path {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sc-flat-stone {
+  fill: #d9cfc0;
+  stroke: #b8ab98;
+  stroke-width: 1;
+}
+
+.sc-flat-stone.is-finish {
+  fill: #f2c230;
+  stroke: #c99a10;
+}
+
+.sc-flat-number {
+  fill: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.sc-flat-marker circle {
+  stroke: #2b2433;
+  stroke-width: 1;
+}
+
+.sc-flat-marker text {
+  font-size: 9px;
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: middle;
 }
