@@ -1,8 +1,15 @@
 import { button, h, SECOND_TAP_DELAY_MS, swatch } from '../dom';
 import './scores.css';
-import type { Board } from '../../board/board';
+import type { Board, BoardQuality } from '../../board/board';
 import { canUndo, endGame, gameOver, nextRedo, standings, type Game } from '../../game';
 import { boardPlayers, finalePlay, roundPlay, undoPlay, type PlayMode } from './board-input';
+import { showFlatTrack } from './flat-track';
+
+/**
+ * How much board this phone gets, for the rest of the session: lowered when rounds played too
+ * slowly, so the next scores screen starts there. `flat` is the 2D track.
+ */
+let sessionQuality: BoardQuality | 'flat' = 'full';
 
 export interface ScoresScreenOptions {
   /**
@@ -49,9 +56,18 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
   skip.hidden = true;
   stage.append(skip);
   let board: Board | null = null;
-  let boardFailed = false;
   let left = false;
-  startBoard();
+  if (sessionQuality === 'flat') showFlat();
+  else startBoard();
+
+  /** The 2D track instead of the board: no animation, final positions only. */
+  function showFlat() {
+    board?.dispose();
+    board = null;
+    skip.hidden = true;
+    stage.classList.add('is-flat');
+    showFlatTrack(stage, game.trackLength, boardPlayers(game));
+  }
 
   function startBoard() {
     const { play } = options;
@@ -62,17 +78,22 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
         board = createBoard(stage, {
           trackLength: game.trackLength,
           players: rp ? rp.before : boardPlayers(game),
+          quality: sessionQuality === 'lite' ? 'lite' : 'full',
           onPlayingChange: (playing) => {
-            skip.hidden = !playing;
+            if (board) skip.hidden = !playing;
+          },
+          onSlow: (next) => {
+            sessionQuality = next;
+            if (next === 'flat') showFlat();
           },
         });
         if (rp) void board.play(rp.round);
         else if (play === 'finale') void board.play(finalePlay(game));
       })
       .catch(() => {
-        // No WebGL, or the board failed to load: the readout still has every score.
-        boardFailed = true;
-        stage.remove();
+        // No WebGL, or the board's file could not load (for example an old version after an
+        // update): the 2D track shows the same positions.
+        if (!left) showFlat();
       });
   }
 
@@ -91,7 +112,7 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
         button('Home', 'btn btn-ghost', options.onHome),
         h('h1', { textContent: game.rounds.length === 0 ? 'Scores' : `After round ${game.rounds.length}` })));
     }
-    if (!boardFailed) screen.append(stage);
+    screen.append(stage);
 
     const list = h('ol', { className: 'sc-list' });
     list.setAttribute('aria-label', 'Scores');

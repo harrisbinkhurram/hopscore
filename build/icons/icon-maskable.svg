@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#3f9b5a"/>
+  <g id="bunny" transform="translate(256 262) scale(0.74) translate(-256 -248)">
+    <polygon points="170,250 150,140 168,52 214,108 226,236" fill="#fffaf3"/>
+    <polygon points="178,214 168,128 178,86 204,124 208,214" fill="#ffb3c7"/>
+    <polygon points="286,236 298,108 344,52 362,140 342,250" fill="#fffaf3"/>
+    <polygon points="304,214 308,124 334,86 344,128 334,214" fill="#ffb3c7"/>
+    <polygon points="256,196 340,222 392,300 372,392 300,444 212,444 140,392 120,300 172,222" fill="#fffaf3"/>
+    <polygon points="256,196 340,222 392,300 256,300" fill="#f3ebe0"/>
+    <polygon points="120,300 140,392 212,444 256,300" fill="#efe5d8"/>
+    <circle cx="206" cy="308" r="17" fill="#2b2433"/>
+    <circle cx="306" cy="308" r="17" fill="#2b2433"/>
+    <circle cx="212" cy="302" r="5" fill="#fff"/>
+    <circle cx="312" cy="302" r="5" fill="#fff"/>
+    <polygon points="240,352 272,352 256,372" fill="#ff8fab"/>
+    <circle cx="176" cy="362" r="18" fill="#ffc9d6" opacity="0.8"/>
+    <circle cx="336" cy="362" r="18" fill="#ffc9d6" opacity="0.8"/>
+  </g>
+</svg>

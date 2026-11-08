@@ -7,7 +7,7 @@ Dixit Score Tracker: a free score keeper for storytelling card games, made for a
 - Setup: Node 22 or newer (see `.nvmrc`), then npm install
 - Run: npm run dev (add -- --host to try it on a phone on the same Wi-Fi)
 - Test: npm test (Vitest, runs once)
-- Typecheck: npm run typecheck
+- Typecheck: npm run typecheck (the app with `tsconfig.json`, the build code with `tsconfig.node.json`)
 - Build: npm run build (typecheck, then a static site in dist/)
 - Preview the build: npm run preview
 
@@ -17,14 +17,16 @@ CI (`.github/workflows/deploy.yml`) runs npm ci, npm test and npm run build on e
 
 | Path | Holds |
 |---|---|
-| `index.html` | Page shell |
+| `index.html` | Page shell, with the manifest and icon links |
 | `src/main.ts` | Entry point, home page and the game flow; creates the one player store |
-| `src/app/` | App-wide bits (name, tagline) |
+| `src/app/` | App-wide bits: name, tagline, disclaimer, the service worker and new versions (`updates.ts`) |
 | `src/scoring/` | Pure scoring logic, imported through its index.ts |
 | `src/storage/` | Players and groups saved on the device, with migrations |
 | `src/game/` | The game in progress: seats, rounds, totals. Pure, imported through its index.ts |
 | `src/screens/` | The app's screens, one folder each, with shared helpers in `dom.ts` and `common.css` |
 | `src/board/` | The Three.js garden board, bunnies and round animations, loaded lazily |
+| `public/` | Copied as is: favicon, web app manifest, app icons |
+| `build/` | Build code: the Vite plugin that writes the offline service worker (`pwa.ts`), the icon sources and their render script |
 | `docs/plan/` | Spec, overview, plan manifest and the task prompts |
 | `docs/tasks/` | One folder per task (HS-NN): raw prompt, execution plan, acceptance criteria |
 
@@ -36,7 +38,8 @@ Each `src/` module has a README.md stating its contract. Keep it current when th
 - `src/scoring/` stays pure: no DOM, no storage. Rule numbers live only in `src/scoring/rules.ts`.
 - Storage changes never throw, and saved data from a newer version or a failed migration is never written over. Changing the saved shape needs a migration (`src/storage/README.md`).
 - Bunny colour ids are saved: never rename or remove one.
-- "Dixit" appears only in the tagline, never in the app name.
+- "Dixit" appears only in the tagline and the Libellud disclaimer, never in the app name, icon or home-screen label.
+- The service worker never touches saved data, and a new version replaces the old cache whole (`build/pwa.ts`).
 
 ## Documentation
 

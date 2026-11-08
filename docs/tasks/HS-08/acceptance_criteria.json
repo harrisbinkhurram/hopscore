@@ -1,0 +1,79 @@
+{
+  "task": "HS-08",
+  "branch": "feature/hs-08-offline-install-polish",
+  "locked_at": "2026-11-08",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "The app installs to the home screen as Hopscore with the bunny icon and theme colours; start URL and scope are /hopscore/; no Dixit in the manifest, icons or label",
+      "verification": "manual: npm run preview in Chrome: the manifest loads with name/short name Hopscore, start URL and scope /hopscore/, three icons served, the service worker controls /hopscore/; grep -i dixit dist/manifest.webmanifest finds nothing; dist/index.html manifest and apple-touch-icon hrefs start with /hopscore/ (DevTools installability panel and a real home-screen install not confirmed; Change Log 2026-11-08)",
+      "passes": true
+    },
+    {
+      "id": "AC-2",
+      "description": "After the first visit the app works with no connection: Home, a whole game and the 3D board load offline",
+      "verification": "build/pwa.test.ts (every built file precached with cache: 'reload', sw.js left out, page loads served from the cached index.html); manual: preview, first visit, DevTools Network Offline, reload and play a round with the board",
+      "passes": true
+    },
+    {
+      "id": "AC-3",
+      "description": "A new deploy shows 'New version ready' on Home only; tapping it loads the new version; old caches are deleted; saved game, history, players and groups are unchanged",
+      "verification": "src/app/updates.test.ts and build/pwa.test.ts (version changes with content, activate deletes old hopscore-* caches); manual: preview a build, start a game, rebuild with a change, reload, the button is on Home and not on game screens, tap it with a game in progress: no leave-page prompt, new version runs, one hopscore-* cache left, localStorage values identical",
+      "passes": true
+    },
+    {
+      "id": "AC-4",
+      "description": "Home shows the footer 'Not affiliated with or endorsed by Libellud. Dixit is a trademark of Libellud.'",
+      "verification": "branding.test.ts new DISCLAIMER case; manual: footer visible on Home at 320 px",
+      "passes": true
+    },
+    {
+      "id": "AC-5",
+      "description": "The first load is about 1 MB compressed or less and Three.js stays out of it",
+      "verification": "npm run build, gzip -9 sizes of index.html and the index js/css; the index chunk contains no three.js code (grep WebGLRenderer finds it only in the board chunk)",
+      "passes": true
+    },
+    {
+      "id": "AC-6",
+      "description": "When frames drop during a round the board turns its effects down, and if still slow switches to the flat 2D track; the choice lasts for the session",
+      "verification": "src/board/frame-watch.test.ts (including a 30 fps cap staying ok); manual: preview with a 70 ms CPU load added to every animation frame (about 12 fps): rounds drop to lite, then the flat track, and the next scores visit starts at that level; a normal-speed tab never drops (DevTools throttling and a real phone not confirmed; Change Log 2026-11-08)",
+      "passes": true
+    },
+    {
+      "id": "AC-7",
+      "description": "The flat 2D track shows every player's position by stone, numbered every 5, when the board is too slow or WebGL is missing",
+      "verification": "src/screens/scores/flat-track.test.ts; manual: with WebGL made to fail, the scores screen shows the flat track and the score list",
+      "passes": true
+    },
+    {
+      "id": "AC-8",
+      "description": "Votes entered for the current round survive closing the tab mid-round",
+      "verification": "manual: tap some votes, close the tab without Home, reopen, Resume shows the same storyteller and votes",
+      "passes": true
+    },
+    {
+      "id": "AC-9",
+      "description": "When another tab changes the game, this tab takes the saved game and goes Home with a notice instead of writing its old copy over it",
+      "verification": "src/storage/game-store.test.ts onGameChanged cases (other tab, key null, newer version); manual: two tabs on one game, confirm a round in tab B, tab A shows Home with the notice and Resume continues tab B's game; a vote tapped in tab B does not move tab A",
+      "passes": true
+    },
+    {
+      "id": "AC-10",
+      "description": "A saved game from a newer app version is not offered for Resume, Home says it is kept safe, and it is never added to the history",
+      "verification": "manual: put a version 99 hopscore.game with a valid shape in localStorage, reload: no Resume, the notice shows; after a new game's Done the kept-safe game is not in Past games and the hopscore.game value is byte-identical",
+      "passes": true
+    },
+    {
+      "id": "AC-11",
+      "description": "Every screen fits 320 px with no sideways scroll, tap targets are 48 px or more, text is readable in light and dark, and reduced motion glides (including the Undo hop back)",
+      "verification": "manual: each screen in a 320 px iframe, light and dark, and with reduced motion emulated: confirm a round and undo it",
+      "passes": true
+    },
+    {
+      "id": "AC-12",
+      "description": "Typecheck, tests and build pass locally and in CI",
+      "verification": "npm run typecheck && npm test && npm run build locally; the PR's Test and deploy check is green",
+      "passes": true
+    }
+  ]
+}

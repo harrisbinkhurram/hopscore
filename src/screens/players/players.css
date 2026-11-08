@@ -134,62 +134,6 @@
   background: var(--surface);
 }
 
-.ps-colours {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
-}
-
-.ps-colour {
-  min-height: 3rem;
-  padding: 0 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: 2px solid var(--line);
-  border-radius: 0.75rem;
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-.ps-colour.is-chosen {
-  border-color: var(--accent);
-  font-weight: 700;
-}
-
-/* Held by another player: greyed, with the holder's name. Locked while a free colour is left. */
-.ps-colour.is-taken:not(.is-chosen) {
-  color: var(--muted);
-  border-style: dashed;
-}
-
-.ps-colour[aria-disabled='true'] {
-  cursor: default;
-  opacity: 0.6;
-}
-
-.ps-holder {
-  margin-left: auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.8rem;
-}
-
-.ps-colour.is-chosen .ps-holder {
-  margin-left: 0;
-}
-
-.ps-colour.is-chosen::after {
-  content: '✓';
-  margin-left: auto;
-  color: var(--accent);
-}
-
 .ps-checks {
   display: flex;
   flex-direction: column;

@@ -90,7 +90,7 @@
       "depends_on": [
         4
       ],
-      "status": "in_progress",
+      "status": "completed",
       "task_flow_folder": "docs/tasks/HS-07",
       "branch": "feature/hs-07-undo-resume-history",
       "pr": 8
@@ -103,10 +103,10 @@
         6,
         7
       ],
-      "status": "planned",
-      "task_flow_folder": null,
-      "branch": null,
-      "pr": null
+      "status": "in_progress",
+      "task_flow_folder": "docs/tasks/HS-08",
+      "branch": "feature/hs-08-offline-install-polish",
+      "pr": 9
     },
     {
       "sequence": 9,
