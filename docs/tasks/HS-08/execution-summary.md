@@ -1,13 +1,15 @@
 # HS-08 — execution summary
 
 ## Pull Request
-- *PR not yet created*
+- **PR:** #9, HS-08: Offline, install and polish
+- **URL:** https://github.com/harrisbinkhurram/hopscore/pull/9
+- **Status:** Open
 
 ## Current State
-- **Phase:** 2 (Plan)
+- **Phase:** 4 (Finish)
 - **Branch:** feature/hs-08-offline-install-polish
 - **Worktree:** true (reused, created before the flow started)
-- **Last Action:** plan written; verifier (two passes) and reviewer findings folded in
+- **Last Action:** PR #9 opened; waiting on CI for AC-12
 
 ## Q&A Log
 - New version deployed? **Button on Home** ("New version ready"), never mid-game; otherwise it
