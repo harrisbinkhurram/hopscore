@@ -170,7 +170,7 @@ function showHome(root: HTMLElement) {
   if (notice) parts.push(h('p', { className: 'home-notice', role: 'status', textContent: notice }));
   notice = null;
   if (games.gameKeptSafe) {
-    parts.push(h('p', { className: 'home-notice', textContent: 'A saved game could not be opened by this version of Hopscore. It is kept safe, not changed.' }));
+    parts.push(h('p', { className: 'home-notice', textContent: 'A saved game could not be opened by this version of Hopscore. It is kept safe, not changed. A new game played now is not saved: reload to update Hopscore.' }));
   }
   if (updates?.ready) {
     parts.push(button('New version ready: tap to update', 'btn home-link home-update', () => updates.apply()));
