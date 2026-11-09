@@ -46,7 +46,7 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
     const screen = h('div', { className: 'screen setup-screen' },
       h('header', { className: 'screen-header' }, button('Back', 'btn btn-ghost', options.onBack),
         h('h1', { textContent: 'New game' })),
-      groupSection(), playerSection(), seatSection(), trackSection(), startSection());
+      groupSection(), playerSection(), seatSection(), trackSection(), ...startSection());
 
     const active = document.activeElement;
     const keep = focusKey ?? (active instanceof HTMLElement && root.contains(active) ? active.dataset.focus : null);
@@ -301,8 +301,10 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
     if (options.replacing) {
       parts.push(h('p', { className: 'su-note su-warn', textContent: 'A game is in progress. Starting a new one ends it.' }));
     }
-    parts.push(start, h('p', { className: 'screen-hint su-center', textContent: hint }));
-    return h('section', { className: 'screen-section' }, ...parts);
+    // Only Start and its hint stay pinned: the warning would make the bar too tall on a short window.
+    parts.push(h('section', { className: 'screen-section screen-actions' },
+      start, h('p', { className: 'screen-hint su-center', textContent: hint })));
+    return parts;
   }
 
   render();

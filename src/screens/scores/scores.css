@@ -6,6 +6,7 @@
  */
 .sc-stage {
   position: relative;
+  isolation: isolate; /* Keeps Skip's z-index inside the board, under the pinned button bar. */
   height: clamp(15rem, 50dvh, 32rem);
   border-radius: 1rem;
   overflow: hidden;

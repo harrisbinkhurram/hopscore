@@ -129,13 +129,15 @@ export function showScoresScreen(root: HTMLElement, game: Game, options: ScoresS
     screen.append(list, h('p', { className: 'screen-hint sc-center', textContent: `First to ${game.trackLength} wins.` }));
 
     if (over) {
-      screen.append(button('Done', 'btn btn-primary btn-wide sc-main', once(options.onDone)));
+      screen.append(h('div', { className: 'screen-section screen-actions' },
+        button('Done', 'btn btn-primary btn-wide sc-main', once(options.onDone))));
       screen.append(undoRow());
     } else {
       const next = game.seats.find((s) => s.id === game.storyteller)!;
       screen.append(
-        h('p', { className: 'sc-next', textContent: `Next storyteller: ${next.name}` }),
-        button(game.rounds.length === 0 ? 'Score the first round' : 'Score next round', 'btn btn-primary btn-wide sc-main', options.onNextRound),
+        h('div', { className: 'screen-section screen-actions' },
+          h('p', { className: 'sc-next', textContent: `Next storyteller: ${next.name}` }),
+          button(game.rounds.length === 0 ? 'Score the first round' : 'Score next round', 'btn btn-primary btn-wide sc-main', options.onNextRound)),
         undoRow(),
         endButton(),
       );
