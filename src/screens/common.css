@@ -203,3 +203,22 @@
 .chip[aria-pressed='true'] .swatch {
   border-color: #fff;
 }
+
+/*
+ * The screen's main action, pinned to the bottom of the window while the page scrolls behind it.
+ * Sticky, not fixed: it keeps its place in the flow, so whatever is above it still scrolls fully
+ * into view, and anything after it (Undo, End game) shows once the page is scrolled to the end.
+ */
+.screen-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  padding: 0.75rem 0 max(1rem, env(safe-area-inset-bottom));
+  background: var(--bg);
+  box-shadow: 0 -1px 0 var(--line);
+}
+
+/* Last on the screen, it takes the place of #app's bottom padding and sits on the window edge. */
+.screen-actions:last-child {
+  margin-bottom: calc(-1 * max(1rem, env(safe-area-inset-bottom)));
+}

@@ -123,7 +123,7 @@ export function showRoundScreen(root: HTMLElement, game: Game, options: RoundScr
     }));
     b.disabled = !allVoted();
     const hint = left === 0 ? 'Everyone has voted.' : `${left} still to vote.`;
-    return h('section', { className: 'screen-section' }, b, h('p', { className: 'screen-hint rd-center', textContent: hint }));
+    return h('section', { className: 'screen-section screen-actions' }, b, h('p', { className: 'screen-hint rd-center', textContent: hint }));
   }
 
   function reviewSections() {
@@ -149,7 +149,7 @@ export function showRoundScreen(root: HTMLElement, game: Game, options: RoundScr
     return [
       h('p', { className: 'screen-hint', textContent: `${name(storyteller)} told the story.` }),
       list,
-      h('section', { className: 'screen-section' }, confirm, back),
+      h('section', { className: 'screen-section screen-actions' }, confirm, back),
     ];
   }
 

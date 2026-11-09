@@ -14,6 +14,11 @@ after every change.
 `dom.ts` holds the shared helpers (`h`, `button`, `swatch`, `errorLine`) and loads `common.css`
 (screen root, buttons, chips, shared colours). Import it before the screen's own CSS.
 
+A screen's main action (Start game, Review points, Confirm, Score next round, Done) sits in a
+`.screen-actions` block (`common.css`): sticky at the bottom of the window, so it stays in view while
+the page scrolls behind it. Hints that go with the button sit inside it; warnings and secondary
+buttons (Undo, End game) stay outside it, in the page flow.
+
 `player-editor.ts` is the name field and colour picker for a saved player, used by `players/` and
 `setup/`. Picking a colour also saves a name typed but not saved yet.
 
