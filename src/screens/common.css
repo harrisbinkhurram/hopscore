@@ -218,6 +218,11 @@
   box-shadow: 0 -1px 0 var(--line);
 }
 
+/* Focus and the phone keyboard scroll a field into view above the bar, not under it. */
+html:has(.screen-actions) {
+  scroll-padding-bottom: 9rem;
+}
+
 /* Last on the screen, it takes the place of #app's bottom padding and sits on the window edge. */
 .screen-actions:last-child {
   margin-bottom: calc(-1 * max(1rem, env(safe-area-inset-bottom)));
