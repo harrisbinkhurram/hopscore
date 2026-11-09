@@ -103,7 +103,7 @@
         6,
         7
       ],
-      "status": "in_progress",
+      "status": "completed",
       "task_flow_folder": "docs/tasks/HS-08",
       "branch": "feature/hs-08-offline-install-polish",
       "pr": 9

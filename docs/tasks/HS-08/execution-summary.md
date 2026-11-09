@@ -3,13 +3,13 @@
 ## Pull Request
 - **PR:** #9, HS-08: Offline, install and polish
 - **URL:** https://github.com/harrisbinkhurram/hopscore/pull/9
-- **Status:** Open
+- **Status:** Merged (2026-11-08)
 
 ## Current State
 - **Phase:** 4 (Finish)
 - **Branch:** feature/hs-08-offline-install-polish
 - **Worktree:** true (reused, created before the flow started)
-- **Last Action:** PR #9 open, CI green (run 42482986084); every acceptance criterion passes
+- **Last Action:** PR #9 merged. Post-merge review follow-ups fixed in a separate PR
 
 ## Q&A Log
 - New version deployed? **Button on Home** ("New version ready"), never mid-game; otherwise it
@@ -25,11 +25,11 @@
   fps so a 30 fps battery-saver cap is not "slow"; the other-tab path never writes; generated
   service worker run in a test against fakes.
 - Plan verifier: existing branding test left untouched (new DISCLAIMER case); AGENTS.md Dixit
-  invariant reworded; plugin apply 'build' and no-op after a failed build; @types/node ^22.12.0.
+  invariant reworded; plugin apply 'build' and no-op after a failed build; @types/node ^22.20.5.
 
 - Mid-coding (Harris): rename players on the New game screen; a colour change must not reset a
   typed name. Done (shared player editor).
 - AC-1 / AC-6 methods accepted with notes in the PR; AC-12 flips once CI is green (Harris).
 
 ## Next Steps
-- PR #9 open, CI green. Merge when Harris asks.
+- None. Merged; review follow-ups (kept-safe notice, AGENTS.md row, setup Start disarm) went in a follow-up PR.

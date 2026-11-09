@@ -193,8 +193,9 @@ export function showSetupScreen(root: HTMLElement, store: PlayerStore, options: 
       focusKey: `edit-name:${id}`,
       onChange: (error) => {
         // On success the typed name is saved: forget it, keep the editor open for more changes.
-        editing = { id, draft: error ? editing?.draft : undefined, error };
-        render();
+        update(() => {
+          editing = { id, draft: error ? editing?.draft : undefined, error };
+        });
       },
     });
     const parts: HTMLElement[] = [rename];
